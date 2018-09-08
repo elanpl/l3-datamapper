@@ -38,7 +38,7 @@ class DMZ_CSV {
 		// determine the correct field set.
 		if(empty($fields))
 		{
-			$fields = $object->fields;
+			$fields = $object->serializable_fields;
 		}
 		
 		$success = TRUE;

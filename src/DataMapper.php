@@ -282,6 +282,9 @@ class DataMapper implements IteratorAggregate {
 	 * @var array
 	 */
 	public $fields = array();
+
+	public $serializable_fields = array();
+
 	/**
 	 * Contains the result of the last query.
 	 * @var array
@@ -360,7 +363,7 @@ class DataMapper implements IteratorAggregate {
 		$this->_dmz_assign_libraries();
 
 		$this_class = get_class($this);
-                $this_class = join('', array_slice(explode('\\', $this_class), -1));
+        $this_class = join('', array_slice(explode('\\', $this_class), -1));
                 
 		$is_dmz = $this_class == 'DataMapper';
 
@@ -381,7 +384,7 @@ class DataMapper implements IteratorAggregate {
 		if (empty($this->model))
 		{
 			$this->model = $common_key;
-                }
+		}
 
 		// If model is 'datamapper' then this is the initial autoload by CodeIgniter
 		if ($is_dmz)
@@ -472,7 +475,6 @@ class DataMapper implements IteratorAggregate {
 
 			if(!$loaded_from_cache)
 			{
-
 				// Determine table name
 				if (empty($this->table))
 				{
@@ -558,6 +560,8 @@ class DataMapper implements IteratorAggregate {
 					// Populate fields array
 					$this->fields[] = $field->name;
 
+					$this->serializable_fields[] = $field->name;
+
 					// Add validation if current field has none
 					if ( !isset($this->validation[$field->name]))
 					{
@@ -582,8 +586,23 @@ class DataMapper implements IteratorAggregate {
 					$this->post_model_init(FALSE);
 				}
 
+				$remove_fields_from_serialization = explode(",",DataMapper::$config['remove_fields_from_serialization']);
+				if(count($remove_fields_from_serialization) !== 0){
+					foreach($remove_fields_from_serialization as $remove_field_from_serialization)
+					{
+						$key = array_search($remove_field_from_serialization, $this->serializable_fields);
+						if($key!==FALSE){
+							array_splice($this->serializable_fields, $key, 1);
+							foreach($this->all as $aa)
+							{
+								array_splice($aa->serializable_fields, $key, 1);
+							}
+						}
+					}
+				}      
+
 				// Store common model settings
-				foreach (array('table', 'fields', 'validation',
+				foreach (array('table', 'fields', 'serializable_fields', 'validation',
 							'has_one', 'has_many', '_field_tracking') as $item)
 				{
 					DataMapper::$common[$common_key][$item] = $this->{$item};
@@ -624,9 +643,7 @@ class DataMapper implements IteratorAggregate {
 							FALSE);
 			}
 			unset($validation);
-		}
-
-               
+		} 
                 
 		// Load stored common model settings by reference
 		foreach(DataMapper::$common[$common_key] as $key => &$value)
@@ -1282,21 +1299,6 @@ class DataMapper implements IteratorAggregate {
 		if($query)
 		{
 			$this->_process_query($query);
-		}
-
-		$remove_fields_from_serialization = explode(",",DataMapper::$config['remove_fields_from_serialization']);
-		if(count($remove_fields_from_serialization) !== 0){
-			foreach($remove_fields_from_serialization as $remove_field_from_serialization)
-			{
-				$key = array_search($remove_field_from_serialization, $this->fields);
-				if($key!==FALSE){
-					array_splice($this->fields, $key, 1);
-					foreach($this->all as $aa)
-					{
-						array_splice($aa->fields, $key, 1);
-					}
-				}
-			}
 		}
 
 		// For method chaining

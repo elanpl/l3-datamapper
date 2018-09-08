@@ -38,7 +38,7 @@ class DMZ_Object {
 		// assume all database columns if $fields is not provided.
 		if(empty($fields))
 		{
-			$fields = $object->fields;
+			$fields = $object->serializable_fields;
 		}
 		else
 		{
@@ -46,7 +46,7 @@ class DMZ_Object {
                         
 			is_array($fields) or $fields = array($fields);
 			if (is_array($fields) && in_array('*',$fields) ) {
-					$fieldsO = $object->fields;
+					$fieldsO = $object->serializable_fields;
 					$fields = array_merge($fieldsO, $fields );
 					unset( $fields[ array_search ('*', $fields) ] );
 			}

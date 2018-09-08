@@ -38,11 +38,11 @@ class DMZ_Json {
 	public function to_json($object, $fields = '', $pretty_print = FALSE, $include = array(), $no_encode = FALSE)
 	{
 		// make sure the fields array is defined
-		empty($fields) and $fields = $object->fields;
+		empty($fields) and $fields = $object->serializable_fields;
 
 		is_array($fields) or $fields = array($fields);
 		if (is_array($fields) && in_array('*',$fields) ) {
-			$fieldsO = $object->fields;
+			$fieldsO = $object->serializable_fields;
 			$fields = array_merge($fieldsO, $fields );
 			unset( $fields[ array_search ('*', $fields) ] );
 
