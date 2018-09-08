@@ -1284,6 +1284,21 @@ class DataMapper implements IteratorAggregate {
 			$this->_process_query($query);
 		}
 
+		$remove_fields_from_serialization = explode(",",DataMapper::$config['remove_fields_from_serialization']);
+		if(count($remove_fields_from_serialization) !== 0){
+			foreach($remove_fields_from_serialization as $remove_field_from_serialization)
+			{
+				$key = array_search($remove_field_from_serialization, $this->fields);
+				if($key!==FALSE){
+					array_splice($this->fields, $key, 1);
+					foreach($this->all as $aa)
+					{
+						array_splice($aa->fields, $key, 1);
+					}
+				}
+			}
+		}
+
 		// For method chaining
 		return $this;
 	}
@@ -4758,7 +4773,7 @@ class DataMapper implements IteratorAggregate {
 			{
 				$append = $append_name;
 			}
-			$append .= '_';
+			$append .= DataMapper::$config['alias_field_concat'];
 		}
 
 		// now add fields
@@ -4766,7 +4781,7 @@ class DataMapper implements IteratorAggregate {
 		$property_map = array();
 		foreach ($fields as $field)
 		{
-			$new_field = $append . $field;
+			$new_field = DataMapper::$config['camelize_alias_field_name'] ? $append . \elanpl\DM\helpers\inflector_helper::camelize($field, DataMapper::$config['camelize_all_field_name_words']) : $append . $field;
 			// prevent collisions
 			if(in_array($new_field, $this->fields)) {
 				if($instantiate && $field == 'id' && $new_field != 'id') {
