@@ -231,7 +231,7 @@ class DMZ_Array {
 	 * @param	array $fields Array of 'safe' fields.  If empty, only includes the database columns.
 	 * @return	array|bool A list of newly related objects, or the result of the save if $save is TRUE
 	 */
-	function all_from_array($object, $data, $fields = '')
+	function all_from_array($object, $data, $fields = '', $save = FALSE)
 	{
 		// get the objects class name, we need it to construct copies
 		$class = get_class($object);
@@ -244,12 +244,12 @@ class DMZ_Array {
 			// create an object for this row
 			if ($first)
 			{
-				$object->from_array($row, $fields);
+				$object->from_array($row, $fields, $save);
 			}
 			else
 			{
 				$new = new $class;
-				$new->from_array($row, $fields);
+				$new->from_array($row, $fields, $save);
 			}
 
 			// and store it in the object
