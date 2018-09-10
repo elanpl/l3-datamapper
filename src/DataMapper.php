@@ -839,60 +839,36 @@ class DataMapper implements IteratorAggregate {
 			{
 				$extensions['_methods'] = array();
 			}
-			// determine the file name and class name
-			$file = DataMapper::$config['extensions_path'] . '/' . $name . EXT;
-			if ( !file_exists($file))
-			{
-				if(strpos($name, '/') === FALSE)
-				{
-					$file = DataMapper::$config['path'].DataMapper::$config['extensions_path'] . '/' . $name . EXT;
-					$ext = $name;
-				}
-				else
-				{
-					$file = DataMapper::$config['path'] . $name . EXT;
-					$ext = array_pop(explode('/', $name));
-				}
-
-				if(!file_exists($file))
-				{
-					\elanpl\DM\helpers\inflector_helper::show_error('DataMapper Error: loading extension ' . $name . ': File not found.');
-				}
-			}
-			else
-			{
-				$ext = $name;
-			}
-
-			// load class
-			include_once($file);
 
             // Allow for DMZ_Extension, DataMapper_Extension, etc.
 			foreach($class_prefixes as $index => $prefix)
 			{				
-				if(class_exists('\\elanpl\\DM\\extensions\\'.$prefix.$ext))
+				var_dump($prefix);
+				if(class_exists('\\elanpl\\DM\\extensions\\'.$prefix.$name))
 				{
-					$ext = '\\elanpl\\DM\\extensions\\'.$prefix.$ext;
+					var_dump($prefix.$name);
+					$name = '\\elanpl\\DM\\extensions\\'.$prefix.$name;
 					break;
 				}
 			}
-			if(!class_exists($ext))
+			if(!class_exists($name))
 			{
+				var_dump($name);
 				\elanpl\DM\helpers\inflector_helper::show_error("DataMapper Error: Unable to find a class for extension $name.");
 			}
 			// create class
 			if(is_null($options))
 			{
-				$o = new $ext(NULL, isset($this) ? $this : NULL);
+				$o = new $name(NULL, isset($this) ? $this : NULL);
 			}
 			else
 			{
-				$o = new $ext($options, isset($this) ? $this : NULL);
+				$o = new $name($options, isset($this) ? $this : NULL);
 			}
 			$extensions[$name] = $o;
 
 			// figure out which methods can be called on this class.
-			$methods = get_class_methods($ext);
+			$methods = get_class_methods($name);
 			foreach($methods as $m)
 			{
 				// do not load private methods or methods already loaded.
