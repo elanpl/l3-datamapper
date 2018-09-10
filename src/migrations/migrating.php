@@ -4,7 +4,7 @@ namespace elanpl\DM\migrations;
 use elanpl\DM\migrations\MigrationModel;
 use elanpl\DM\migrations\Table;
 class Migrating {
-    function __construct($database_path, $vendor_path) {
+    function __construct($database_path,  $vendor_path = __DIR__) {
         $this->vendor_path = $vendor_path;
         
         $this->migrations_path = $database_path.'/migrations';
