@@ -843,10 +843,8 @@ class DataMapper implements IteratorAggregate {
             // Allow for DMZ_Extension, DataMapper_Extension, etc.
 			foreach($class_prefixes as $index => $prefix)
 			{				
-				var_dump($prefix);
 				if(class_exists('\\elanpl\\DM\\extensions\\'.$prefix.$name))
 				{
-					var_dump($prefix.$name);
 					$name = '\\elanpl\\DM\\extensions\\'.$prefix.$name;
 					break;
 				}
