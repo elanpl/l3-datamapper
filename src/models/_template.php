@@ -36,10 +36,12 @@ class Template extends DataMapper {
 	// --------------------------------------------------------------------
 
 	// Insert related models that Template can have just one of.
-	var $has_one = array();
+	public $has_one = array();
 
 	// Insert related models that Template can have more than one of.
-	var $has_many = array();
+	public $has_many = array();
+
+	public $serialization_ignore = array();
 
 	/* Relationship Examples
 	 * For normal relationships, simply add the model name to the array:
@@ -64,7 +66,7 @@ class Template extends DataMapper {
 	//   Add validation requirements, such as 'required', for your fields.
 	// --------------------------------------------------------------------
 
-	var $validation = array(
+	public $validation = array(
 		'example' => array(
 			// example is required, and cannot be more than 120 characters long.
 			'rules' => array('required', 'max_length' => 120),

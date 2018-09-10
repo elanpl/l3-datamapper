@@ -586,9 +586,9 @@ class DataMapper implements IteratorAggregate {
 					$this->post_model_init(FALSE);
 				}
 
-				$remove_fields_from_serialization = explode(",",DataMapper::$config['remove_fields_from_serialization']);
-				if(count($remove_fields_from_serialization) !== 0){
-					foreach($remove_fields_from_serialization as $remove_field_from_serialization)
+				
+				if(isset($this->serialization_ignore) && is_array($this->serialization_ignore)){
+					foreach($this->serialization_ignore as $remove_field_from_serialization)
 					{
 						$key = array_search($remove_field_from_serialization, $this->serializable_fields);
 						if($key!==FALSE){
