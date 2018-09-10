@@ -851,7 +851,6 @@ class DataMapper implements IteratorAggregate {
 			}
 			if(!class_exists($name))
 			{
-				var_dump($name);
 				\elanpl\DM\helpers\inflector_helper::show_error("DataMapper Error: Unable to find a class for extension $name.");
 			}
 			// create class
