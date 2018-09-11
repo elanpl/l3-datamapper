@@ -31,9 +31,9 @@ class MySqlConnection extends QueryBuilder
     function Login() {
         if (! $this->conn) {
             try {
-                $this->conn = $this->db_port === null ? 
-                new PDO("mysql:host=".$this->db_server.";dbname=".$this->db_database.";charset=".$this->db_charset."", $this->db_user, $this->db_pass) : 
-                new PDO("mysql:host=".$this->db_server."port=".$this->db_port.";dbname=".$this->db_database.";charset=".$this->db_charset."", $this->db_user, $this->db_pass);                   
+                $dsn = $this->db_port === null ? "mysql:host=".$this->db_server.";dbname=".$this->db_database.";charset=".$this->db_charset
+                                                : "mysql:host=".$this->db_server.";port=".$this->db_port.";dbname=".$this->db_database.";charset=".$this->db_charset;
+                $this->conn =  new PDO($dsn, $this->db_user, $this->db_pass);                         
             } catch(PDOException $e) {
                 $this->conn = null;
                 die($e->getMessage());

@@ -33,10 +33,9 @@ class PostgreSQLConnection extends QueryBuilder
     function Login() {
         if (! $this->conn) {
             try {
-                $this->conn = $this->db_port === null ? 
-                    new PDO("pgsql:host=".$this->db_server.";dbname=".$this->db_database."", $this->db_user, $this->db_pass) : 
-                    new PDO("pgsql:host=".$this->db_server.";port=".$this->db_port.";dbname=".$this->db_database."", $this->db_user, $this->db_pass);
-                
+                $dsn = $this->db_port === null ? "pgsql:host=".$this->db_server.";dbname=".$this->db_database 
+                                                : "pgsql:host=".$this->db_server.";port=".$this->db_port.";dbname=".$this->db_database;
+                $this->conn =  new PDO($dsn, $this->db_user, $this->db_pass);                         
                 $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT);
             } catch(PDOException $e) {
                 $this->conn = null;
