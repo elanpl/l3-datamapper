@@ -51,7 +51,7 @@ class MySqlSchema
             
             if ( isset( $col['default'] ) && $col['default'] ) {
                 if ( $col['default'] == 'current')
-                    $sql .= ' DEFAULT CURRENT_TIMESTAMP';
+                    $sql .= ' DEFAULT CURRENT_TIMESTAMP(1)';
                 else
                     $sql .= ' DEFAULT '.$col['default'].' ';
             }
