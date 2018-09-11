@@ -218,7 +218,7 @@ class Migrating {
         $table = Table::create(MigrationModel::tableName);
         $table->increments('id');
         $table->string('file')->nullable();
-        $table->timestamp('timestamp')->nullable();
+        $table->timestamp('timestamp')->defaultValue('current');;
         $table->integer('step')->nullable();
         $table->run(false);
     }
