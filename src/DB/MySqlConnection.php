@@ -93,7 +93,7 @@ class MySqlConnection extends QueryBuilder
         
         $this->last_sql = ['sql' => $sql, 'binds' => $binds];
         if (CONNECTION_SHOW_SQL)
-            echo '>> '.$sql.'<< <br />'."\n";
+            echo '>> '.$this->lastQuery().'<< <br />'."\n";
         
         $this->Login();
         
