@@ -60,10 +60,10 @@ class DMZ_Object {
 			// handle related fields
 			if(array_key_exists($f, $object->has_one))
 			{
-				$result->$f = $object->{$f}->to_object();
+				$result->$f = $object->{$f}->to_object($fields);
 			}
 			elseif(array_key_exists($f, $object->has_many)){
-				$result->$f = $object->{$f}->all_to_object();
+				$result->$f = $object->{$f}->all_to_object($fields);
 			}
 			else
 			{
