@@ -60,10 +60,12 @@ class DMZ_Object {
 			// handle related fields
 			if(array_key_exists($f, $object->has_one))
 			{
-				$result->$f = $object->{$f}->to_object($fields);
+				$ff = array_merge($object->{$f}->serializable_fields, array_keys($object->{$f}->has_one), array_keys($object->{$f}->has_many));
+				$result->$f = $object->{$f}->to_object($ff);
 			}
 			elseif(array_key_exists($f, $object->has_many)){
-				$result->$f = $object->{$f}->all_to_object($fields);
+				$ff = array_merge($object->{$f}->serializable_fields, array_keys($object->{$f}->has_one), array_keys($object->{$f}->has_many));
+				$result->$f = $object->{$f}->all_to_object($ff);
 			}
 			else
 			{
