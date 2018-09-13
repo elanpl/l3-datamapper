@@ -33,7 +33,8 @@ class MySqlConnection extends QueryBuilder
             try {
                 $dsn = $this->db_port === null ? "mysql:host=".$this->db_server.";dbname=".$this->db_database.";charset=".$this->db_charset
                                                 : "mysql:host=".$this->db_server.";port=".$this->db_port.";dbname=".$this->db_database.";charset=".$this->db_charset;
-                $this->conn =  new PDO($dsn, $this->db_user, $this->db_pass);                         
+                $this->conn =  new PDO($dsn, $this->db_user, $this->db_pass);
+                $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);                         
             } catch(PDOException $e) {
                 $this->conn = null;
                 die($e->getMessage());
@@ -99,8 +100,11 @@ class MySqlConnection extends QueryBuilder
         
         try {
             $this->result = $this->conn->prepare($sql);
-            $this->result->execute($binds);
-            $this->resultCount = $this->result->rowCount();
+            $success = $this->result->execute($binds);
+            if ( $success )
+                $this->resultCount = $this->result->rowCount();
+            else
+                die('QUERY ERROR '.$this->lastQuery());
         } catch(PDOException $e) {
             die($e->getMessage());
         }    
