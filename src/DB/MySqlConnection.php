@@ -129,12 +129,21 @@ class MySqlConnection extends QueryBuilder
         while ( $row = $this->row()) {
             $field = new \stdClass();
             $field->name = $row->Field;
-            $field->type = $row->Type;
+            $field->baseType = $row->Type;
+            if ( $field->baseType == 'tinyint(1)' || $field->baseType == 'boolean' || $field->baseType == 'bit(1)' )
+                $field->type = 'boolean';
+            elseif ( substr($field->baseType,0,4) == 'int(' || substr($field->baseType,0,8) == 'tinyint(' 
+                        ||  substr($field->baseType,0,10) == 'mediumint(' || substr($field->baseType,0,7) == 'bigint(' || substr($field->baseType,0,4) == 'bit(' )
+                $field->type = 'int';
+            elseif ( substr($field->baseType,0,6) == 'double' ||  substr($field->baseType,0,7) == 'decimal' || substr($field->baseType,0,5) == 'float' || substr($field->baseType,0,4) == 'real'  )
+                $field->type = 'float';
+            else    
+                $field->type = '';
             //$field->max_length ;
             $field->primary_key = ($row->Key == 'PRI' ? true : false);
             $structure[] = $field; 
         }
-        
+
         return $structure;
     }
     

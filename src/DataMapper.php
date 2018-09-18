@@ -282,6 +282,8 @@ class DataMapper implements IteratorAggregate {
 	 * @var array
 	 */
 	public $fields = array();
+	
+	public $fieldTypes = array();
 
 	public $serializable_fields = array();
 
@@ -553,12 +555,12 @@ class DataMapper implements IteratorAggregate {
 
 				// Get and store the table's field names and meta data
 				$fields = $this->db->field_data($this->table);
-
 				// Store only the field names and ensure validation list includes all fields
 				foreach ($fields as $field)
 				{
 					// Populate fields array
 					$this->fields[] = $field->name;
+					$this->fieldTypes[ $field->name ] = $field->type;
 
 					$this->serializable_fields[] = $field->name;
 
@@ -602,7 +604,7 @@ class DataMapper implements IteratorAggregate {
 				}      
 
 				// Store common model settings
-				foreach (array('table', 'fields', 'serializable_fields', 'validation',
+				foreach (array('table', 'fields', 'fieldTypes', 'serializable_fields', 'validation',
 							'has_one', 'has_many', '_field_tracking') as $item)
 				{
 					DataMapper::$common[$common_key][$item] = $this->{$item};
@@ -4322,14 +4324,14 @@ class DataMapper implements IteratorAggregate {
 	 */
 	public function _add_related_table($object, $related_field = '', $id_only = FALSE, $db = NULL, &$query_related = NULL, $name_prepend = '', $this_table = NULL)
 	{
-                if ( is_string($object))
+        if ( is_string($object))
 		{
 			// only a model was passed in, not an object
 			$related_field = $object;
 			$object = NULL;
 		} 
-                else if (empty($related_field)) 
-                {
+		else if (empty($related_field)) 
+		{
 			// model was not passed, so get the Object's native model
 			$related_field = $object->model;
 		}
@@ -6193,7 +6195,7 @@ class DataMapper implements IteratorAggregate {
 	 */
 	protected function _process_query($query)
 	{
-            	if ($query->num_rows() > 0)
+        if ($query->num_rows() > 0)
 		{
 			// Populate all with records as objects
 			$this->all = array();
@@ -6263,10 +6265,50 @@ class DataMapper implements IteratorAggregate {
 	public function _to_object($item, $row)
 	{
 		// Populate this object with values from first record
-        	foreach ($row as $key => $value)
+		foreach ($row as $key => $value)
 		{
-        		$item->{$key} = $value;
-        	}
+			$fieldType = '';
+			if(isset($this->fieldTypes[$key]))
+			{
+				$fieldType = $this->fieldTypes[$key];
+			}
+			else{
+				$model_arr = explode(DataMapper::$config['alias_field_concat'],$key);
+
+				if(array_key_exists($model_arr[0], $this->has_one))
+				{
+					$one = $this->has_one[$model_arr[0]];
+					$class = DataMapper::$config['model_namespace'].$one['class'];
+					$instance = new $class();
+					$fieldType = isset($instance->fieldTypes[$model_arr[1]]) ? $instance->fieldTypes[$model_arr[1]] : '';
+				} 
+
+				if(array_key_exists($model_arr[0], $this->has_many))
+				{
+					$many = $this->has_many[$model_arr[0]];
+					$class = DataMapper::$config['model_namespace'].$many['class'];
+					$instance = new $class();
+					$fieldType = isset($instance->fieldTypes[$model_arr[1]]) ? $instance->fieldTypes[$model_arr[1]] : '';
+				}
+
+			}
+
+			if($fieldType == "boolean"){
+				$item->{$key} = (bool)$value;
+			}
+			elseif($fieldType == "int")
+			{
+				$item->{$key} = intval($value);
+			}
+			elseif($fieldType == "float")
+			{
+				$item->{$key} = (float)$value;
+			}
+			else{
+				$item->{$key} = $value;
+			}
+
+		}
 		foreach ($this->fields as $field)
 		{
 			if (!isset($row->{$field}))
