@@ -150,6 +150,14 @@ abstract class QueryBuilder
         $this->select[] = [ 'field' => $field, 'escape' => $escape, 'distinct' => true ];
     }
     
+    public function selectCount($field, $escape = true) {
+        $field_name = explode('.',$field);
+        $field_name = end($field_name);
+        if ( $field_name == '')
+            $field_name = '*';
+        $this->select[] = [ 'field' => $field_name, 'escape' => $escape, 'count' => true, 'alias' => 'numrows' ];
+    }
+    
     public function selectMax($field, $escape = true) {
         $field_name = explode('.',$field);
         $field_name = end($field_name);
@@ -312,11 +320,14 @@ abstract class QueryBuilder
                 if ( isset($s['distinct']) && $s['distinct']) {
                     $prefix = 'distinct '; $sufix = '';
                 }
+                if ( isset($s['count']) && $s['count']) { 
+                    $prefix = 'count( ';  $sufix = ' ) as '.$s['alias'];
+                }
                 if ( isset($s['min']) && $s['min']) {
-                    $prefix = 'min( '; $sufix = ' ) as '.$s['alias'];
+                    $prefix = 'min( ';  $sufix = ' ) as '.$s['alias'];
                 }
                 if ( isset($s['max']) && $s['max']) { 
-                    $prefix = 'max( '; $sufix = ' ) as '.$s['alias'];
+                    $prefix = 'max( ';  $sufix = ' ) as '.$s['alias'];
                 }
                 if ( isset($s['avg']) && $s['avg']) {
                     $prefix = 'avg( '; $sufix = ' ) as '.$s['alias'];

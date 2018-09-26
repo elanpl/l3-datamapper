@@ -309,6 +309,11 @@ class Connection
         return $this->db_connections[$this->current_connection]->distinct($field, $escape);
     }
     
+    public function select_count($field, $escape = true) {
+        return $this->db_connections[$this->current_connection]->selectCount($field, $escape);
+    }
+    
+    
     public function select_max($field, $escape = true) {
         return $this->db_connections[$this->current_connection]->selectMax($field, $escape);
     }

@@ -2371,7 +2371,7 @@ class DataMapper implements IteratorAggregate {
 	 * @param	array $exclude_ids A list of ids to exlcude from the count
 	 * @return	int Number of rows in query.
 	 */
-	public function count($exclude_ids = NULL, $column = NULL, $related_id = NULL)
+	public function count( $column = NULL, $exclude_ids = NULL, $related_id = NULL)
 	{
 		// Check if related object
 		if ( !empty($this->parent))
@@ -2445,17 +2445,20 @@ class DataMapper implements IteratorAggregate {
 		}
 
 		// Manually overridden to allow for COUNT(DISTINCT COLUMN)
-		$select = $this->db->_count_string;
-		if(!empty($column))
-		{
-			// COUNT DISTINCT
-			$select = 'SELECT COUNT(DISTINCT ' . $this->db->dm_call_method('_protect_identifiers', $column) . ') AS ';
-		}
-		$sql = $this->db->dm_call_method('_compile_select', $select . $this->db->dm_call_method('_protect_identifiers', 'numrows'));
-
-		$query = $this->db->query($sql);
-		$this->db->resetQuery();
-
+//		$select = $this->db->_count_string;
+//		if(!empty($column))
+//		{
+//			// COUNT DISTINCT
+//			$select = 'SELECT COUNT(DISTINCT ' . $this->db->dm_call_method('_protect_identifiers', $column) . ') AS ';
+//		}
+//                $sql = $this->db->dm_call_method('_compile_select', $select . $this->db->dm_call_method('_protect_identifiers', 'numrows'));
+//                $query = $this->db->query($sql);
+//		$this->db->resetQuery();
+                
+                $this->db->select_count($column);
+                
+		$query = $this->db->get();
+                
 		if ($query->num_rows() == 0)
 		{
 			return 0;
