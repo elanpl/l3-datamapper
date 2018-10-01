@@ -116,8 +116,27 @@ class Connection
         } elseif ( $this->db_config[$this->current_connection]['driver'] == 'firebird' ) {
             return FirebirdSQLSchema::createTableSql( $table );
         }
-        
     }    
+    
+    public function getUpdateSQL( $table ) {
+        if ( $this->db_config[$this->current_connection]['driver'] == 'mysql' ) {
+            return MySqlSchema::updateTableSql( $table );
+        } elseif ( $this->db_config[$this->current_connection]['driver'] == 'postgresql' ) {
+            return PostgreSQLSchema::updateTableSql( $table );
+        } elseif ( $this->db_config[$this->current_connection]['driver'] == 'firebird' ) {
+            return FirebirdSQLSchema::updateTableSql( $table );
+        }
+    }
+    
+    public function getDropSQL( $table ) {
+        if ( $this->db_config[$this->current_connection]['driver'] == 'mysql' ) {
+            return MySqlSchema::dropTableSql( $table );
+        } elseif ( $this->db_config[$this->current_connection]['driver'] == 'postgresql' ) {
+            return PostgreSQLSchema::dropTableSql( $table );
+        } elseif ( $this->db_config[$this->current_connection]['driver'] == 'firebird' ) {
+            return FirebirdSQLSchema::dropTableSql( $table );
+        }
+    }
     
     public function __clone() {
         //TODO: AG: dodane tylko po to żeby datamapper się nie sypał, do posprzątania później 

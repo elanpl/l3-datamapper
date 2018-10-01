@@ -33,6 +33,10 @@ class Table {
         return new Table('create', $tableName);
     }
     
+    static function update($tableName, $dbName = '') {
+        return new Table('update', $tableName);
+    }
+    
     static function drop($tableName, $dbName = '') {
         $table = new Table('drop', $tableName);
         $table->dropTable();
@@ -345,22 +349,47 @@ class Table {
         $result = false;
         
         
-        if (! $this->connection->tableExists($this->tableName) ) {
-            
-            $sql = $this->connection->getCreateSQL( $this );
-            
-            $result = $this->connection->queryArray( $sql );
-            if ( $result )
-                echo " - Table ".$this->tableName." added.\n";
-            else
-                echo " - Error while adding table ".$this->tableName.".\n"
-                    .implode("\n",$sql)."\n";
-            
-        } else {
-            if ($showTableExistInfo)
-                echo ' - Table '.$this->tableName.' already exists.'."\n";
+        if ( $this->type == 'create' ) {
+            if ( ! $this->connection->tableExists($this->tableName) ) {
+                $sql = $this->connection->getCreateSQL( $this );
+                $result = $this->connection->queryArray( $sql );
+                if ( $result )
+                    echo " - Table ".$this->tableName." added.\n";
+                else
+                    echo " - Error while adding table ".$this->tableName.".\n"
+                        .implode("\n",$sql)."\n";
+
+            } else {
+                if ($showTableExistInfo)
+                    echo ' - Table '.$this->tableName.' already exists.'."\n";
+            }
+        } else if ( $this->type == 'update') {
+            if ( $this->connection->tableExists($this->tableName) ) {
+                $sql = $this->connection->getUpdateSQL( $this );
+                $result = $this->connection->queryArray( $sql );
+                if ( $result )
+                    echo " - Table ".$this->tableName." updated.\n";
+                else
+                    echo " - Error while updating table ".$this->tableName.".\n"
+                        .implode("\n",$sql)."\n";
+            } else {
+                if ($showTableExistInfo)
+                    echo ' - Table '.$this->tableName.' not exists.'."\n";
+            }
+        } else if ( $this->type == 'drop') {
+            if ( $this->connection->tableExists($this->tableName) ) {
+                $sql = $this->connection->getDropSQL( $this );
+                $result = $this->connection->queryArray( $sql );
+                if ( $result )
+                    echo " - Table ".$this->tableName." removed.\n";
+                else
+                    echo " - Error while removing table ".$this->tableName.".\n"
+                        .implode("\n",$sql)."\n";
+            } else {
+                if ($showTableExistInfo)
+                    echo ' - Table '.$this->tableName.' not exists.'."\n";
+            }
         }
-        
         
         return $result;
     }

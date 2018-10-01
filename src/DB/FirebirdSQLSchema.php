@@ -96,6 +96,49 @@ class FirebirdSQLSchema
         return $sqls;
     }
     
+    static function updateTableSql($table) {
+        
+        $columns = $table->getColumns();
+        $indexes = $table->getIndexes();
+        $tableName = $table->tableName;
+        
+        $sql = ' ALTER TABLE '.$tableName.' ';
+        $delimiter = '';
+        
+        foreach ($columns as $col) {
+            $sql .= $delimiter.' ADD `'.$col['column'].'` ';
+            
+            $sql .= self::getType($col['type']);
+            
+            if (isset( $col['null'] ) && $col['null'] == false )
+                $sql .= ' NOT NULL ';
+            
+            if ( isset( $col['default'] ) && $col['default'] ) {
+                if ( $col['default'] == 'current')
+                    $sql .= ' DEFAULT CURRENT_TIMESTAMP(1)';
+                else
+                    $sql .= ' DEFAULT '.$col['default'].' ';
+            }
+            
+            $delimiter = ', '."\n";
+        }
+        
+        $sql .= '; ';
+        
+        $sqls[] = $sql;
+        
+        return $sqls;
+    }
+    
+    static function dropTableSql($table) {
+        $tableName = $table->tableName;
+        
+        $sql = ' DROP TABLE '.$tableName.';';
+        
+        $sqls[] = $sql;
+        return $sqls;
+    }
+    
     static function drop($tableName) { //dropIfExists
         
     }
