@@ -46,11 +46,11 @@ class MySqlSchema
             //UUID_TO_BIN/BIN_TO_UUID
             //INSERT INTO t VALUES(UUID_TO_BIN(UUID(), true))
             
-            if (isset( $col['null'] ) && $col['null'] == false )
+            if (isset( $col['null'] ) && $col['null'] === false )
                 $sql .= ' NOT NULL ';
             
-            if ( isset( $col['default'] ) && $col['default'] ) {
-                if ( $col['default'] == 'current')
+            if ( isset( $col['default'] ) && $col['default'] !== null ) {
+                if ( $col['default'] === 'current')
                     $sql .= ' DEFAULT CURRENT_TIMESTAMP(1)';
                 else
                     $sql .= ' DEFAULT '.$col['default'].' ';
@@ -137,19 +137,45 @@ class MySqlSchema
         $delimiter = '';
         
         foreach ($columns as $col) {
-            $sql .= $delimiter.' ADD `'.$col['column'].'` ';
             
-            $sql .= self::getType($col['type']);
+            if ( isset( $col['dropColumn'] ) && $col['dropColumn'] !== null ) {
+                
+                $sql .= $delimiter.' DROP `'.$col['column'].'` ';
+                
+            } elseif ( isset( $col['renameColumn'] ) && $col['renameColumn'] !== null ) {
+                
+                $sql .= $delimiter.' RENAME COLUMN `'.$col['column'].'` TO `'.$col['newName'].'` ';
+                
+            } elseif ( isset( $col['changeColumn'] ) && $col['changeColumn'] !== null ) {
+                
+                $sql .= $delimiter.' ALTER `'.$col['column'].'` ';
+                $sql .= self::getType($col['type']);
+                if (isset( $col['null'] ) && $col['null'] === false )
+                    $sql .= ' NOT NULL ';
+                if ( isset( $col['default'] ) && $col['default'] !== null ) {
+                    if ( $col['default'] === 'current')
+                        $sql .= ' DEFAULT CURRENT_TIMESTAMP(1)';
+                    else
+                        $sql .= ' DEFAULT '.$col['default'].' ';
+                }
+                
+            } else {
             
-            if (isset( $col['null'] ) && $col['null'] == false )
-                $sql .= ' NOT NULL ';
-            
-            if ( isset( $col['default'] ) && $col['default'] ) {
-                if ( $col['default'] == 'current')
-                    $sql .= ' DEFAULT CURRENT_TIMESTAMP(1)';
-                else
-                    $sql .= ' DEFAULT '.$col['default'].' ';
-            }
+                $sql .= $delimiter.' ADD `'.$col['column'].'` ';
+                $sql .= self::getType($col['type']);
+                if (isset( $col['null'] ) && $col['null'] === false )
+                    $sql .= ' NOT NULL ';
+                if ( isset( $col['default'] ) && $col['default'] !== null ) {
+                    if ( $col['default'] === 'current')
+                        $sql .= ' DEFAULT CURRENT_TIMESTAMP(1)';
+                    else
+                        $sql .= ' DEFAULT '.$col['default'].' ';
+                }
+                if ( isset( $col['after'] ) && $col['after'] !== null ) {
+                    $sql .= ' AFTER '.$col['after'].' ';
+                }
+                    
+            }        
             
             $delimiter = ', '."\n";
         }
@@ -157,6 +183,22 @@ class MySqlSchema
         $sql .= '; ';
         
         $sqls[] = $sql;
+        
+        foreach ($columns as $col) {
+            
+            if ( isset( $col['unique'] ) && $col['unique'] )
+                $sqls[] = ' ALTER TABLE `'.$tableName.'` ADD UNIQUE `UNIQUE_'.$tableName.'_'.$col['column'].'` (`'.$col['column'].'`);';
+            
+            if ( isset( $col['autoincrement'] ) && $col['autoincrement'] )
+                $sqls[] = 'ALTER TABLE `'.$tableName.'` MODIFY `'.$col['column'].'` '.self::getType($col['type']).' NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;';
+            
+            if ( isset( $col['foreign'] ) && $col['foreign'] ) {
+                $sqls[] = 'ALTER TABLE `'.$tableName.'` ADD CONSTRAINT `FK_'.$tableName.'_'.$col['column'].'` '
+                    .' FOREIGN KEY (`'.$col['column'].'`) REFERENCES `'.$col['foreign_table'].'` (`'.$col['foreign_id'].'`); ';
+                $sqls[] = 'commit;';
+            }
+            
+        }
         
         return $sqls;
     }
@@ -170,9 +212,6 @@ class MySqlSchema
         return $sqls;
     }
     
-    static function drop($tableName) { //dropIfExists
-        
-    }
     
     static function hasTable($tableName) {
         

@@ -288,17 +288,29 @@ class Table {
     
 
     function change() {
+        end($this->columns);  
+        $key = key($this->columns);
+        
+        $this->columns[$key]['changeColumn'] = true;  
+        return $this; 
     }    
         
     function first() {
     }    
     
     function renameColumn($columnName, $newColumnName) {
-        
+        $this->columns[] = [
+            'column' => $columnName,
+            'newName' => $newColumnName,
+            'renameColumn' => true,
+        ];
     }
     
     function dropColumn($columnName) {
-        
+        $this->columns[] = [
+            'column' => $columnName,
+            'dropColumn' => true,
+        ];
     }
         
             
@@ -324,7 +336,11 @@ class Table {
     }
     
     function after($columnName) {
+        end($this->columns);  
+        $key = key($this->columns);
         
+        $this->columns[$key]['after'] = $columnName;  
+        return $this; 
     }
     
     function foreign($table, $columnName){

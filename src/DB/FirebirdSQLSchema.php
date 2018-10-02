@@ -65,8 +65,8 @@ class FirebirdSQLSchema
             if (isset( $col['null'] ) && $col['null'] == false )
                 $sql .= ' NOT NULL ';
             
-            if ( isset( $col['default'] ) && $col['default'] )  {
-                if ( $col['default'] == 'current' )
+            if ( isset( $col['default'] ) && $col['default'] !== null )  {
+                if ( $col['default'] === 'current' )
                     $sql .= ' DEFAULT CURRENT_TIMESTAMP  ';
                 else
                     $sql .= ' DEFAULT '.$col['default'].' ';
@@ -106,18 +106,52 @@ class FirebirdSQLSchema
         $delimiter = '';
         
         foreach ($columns as $col) {
-            $sql .= $delimiter.' ADD `'.$col['column'].'` ';
+            if ( isset( $col['dropColumn'] ) && $col['dropColumn'] !== null ) {
+                
+                $sql .= $delimiter.' DROP IF EXISTS `'.$col['column'].'` ';
+                
+            } elseif ( isset( $col['renameColumn'] ) && $col['renameColumn'] !== null ) {
+                
+                $sql .= $delimiter.' ALTER COLUMN  `'.$col['column'].'` TO `'.$col['newName'].'` ';
+                
+            } elseif ( isset( $col['changeColumn'] ) && $col['changeColumn'] !== null ) {
+                
+                $sql .= $delimiter.' ALTER `'.$col['column'].'`  ';
+                if ( isset( $col['autoincrement'] ) && $col['autoincrement'] )
+                    $sql .= 'BIGSERIAL';
+                else    
+                    $sql .= self::getType($col['type']);
+                if (isset( $col['null'] ) && $col['null'] === false )
+                    $sql .= ' NOT NULL ';
+                if ( isset( $col['default'] ) && $col['default'] !== null ) {
+                    if ( $col['default'] === 'current')
+                        $sql .= ' DEFAULT CURRENT_TIMESTAMP ';
+                    else
+                        $sql .= ' DEFAULT '.$col['default'].' ';
+                }
+                if ( isset( $col['foreign'] ) && $col['foreign'] ) {
+                    $sql .= ' references '.$col['foreign_table'].' ('.$col['foreign_id'].') ';
+                }
+                
+            } else {
+                
+                $sql .= $delimiter.' ADD `'.$col['column'].'` ';
             
-            $sql .= self::getType($col['type']);
-            
-            if (isset( $col['null'] ) && $col['null'] == false )
-                $sql .= ' NOT NULL ';
-            
-            if ( isset( $col['default'] ) && $col['default'] ) {
-                if ( $col['default'] == 'current')
-                    $sql .= ' DEFAULT CURRENT_TIMESTAMP(1)';
-                else
-                    $sql .= ' DEFAULT '.$col['default'].' ';
+                $sql .= self::getType($col['type']);
+
+                if (isset( $col['null'] ) && $col['null'] === false )
+                    $sql .= ' NOT NULL ';
+
+                if ( isset( $col['default'] ) && $col['default'] !== null ) {
+                    if ( $col['default'] === 'current')
+                        $sql .= ' DEFAULT CURRENT_TIMESTAMP(1)';
+                    else
+                        $sql .= ' DEFAULT '.$col['default'].' ';
+                }
+                
+                if ( isset( $col['foreign'] ) && $col['foreign'] ) {
+                    $sql .= ' references '.$col['foreign_table'].' ('.$col['foreign_id'].') ';
+                }
             }
             
             $delimiter = ', '."\n";
