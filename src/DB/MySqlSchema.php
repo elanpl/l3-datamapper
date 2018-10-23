@@ -74,10 +74,13 @@ class MySqlSchema
                 $sqls[] = 'ALTER TABLE `'.$tableName.'` MODIFY `'.$col['column'].'` '.self::getType($col['type']).' NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;';
             
             if ( isset( $col['foreign'] ) && $col['foreign'] ) {
+                 
                 $sqls[] = 'ALTER TABLE `'.$tableName.'` ADD CONSTRAINT `FK_'.$tableName.'_'.$col['column'].'` '
-                    .' FOREIGN KEY (`'.$col['column'].'`) REFERENCES `'.$col['foreign_table'].'` (`'.$col['foreign_id'].'`); ';
+                    .' FOREIGN KEY (`'.$col['column'].'`) REFERENCES `'.$col['foreign_table'].'` (`'.$col['foreign_id'].'`)'
+                    .self::prepareForeignOn($col).'; ';
                 $sqls[] = 'commit;';
             }
+            
             
         }
         
@@ -85,7 +88,7 @@ class MySqlSchema
         
         foreach ( $indexes as $key => $index ) {
         
-            $sql = 'CREATE '.$index['type'].' INDEX '.$tableName.'_idx'.($key+1)
+            $sql = 'CREATE '.$index['type'].' INDEX '.$tableName.'_idx_'.$index['name']
                 .' ON '.$tableName
                 .' ('.implode(', ', $index['columns']).');';
             
@@ -125,6 +128,21 @@ class MySqlSchema
             HEX(SUBSTR(_bin, 11))
                  ));
      */    
+    }
+    
+    static function prepareForeignOn($col) {
+        $onDelete = 'NO ACTION';
+        $onDelete = ($col['foreign_onDelete']  == 'SetNull') ? 'SET NULL' : $onDelete;
+        $onDelete = ($col['foreign_onDelete']  == 'SetDefault') ? 'SET DEFAULT' : $onDelete;
+        $onDelete = ($col['foreign_onDelete']  == 'Restrict') ? 'RESTRICT' : $onDelete;
+        $onDelete = ($col['foreign_onDelete']  == 'Cascade') ? 'CASCADE' : $onDelete;
+        $onUpdate = 'NO ACTION';
+        $onUpdate = ($col['foreign_onUpdate']  == 'SetNull') ? 'SET NULL' : $onUpdate;
+        $onUpdate = ($col['foreign_onUpdate']  == 'Restrict') ? 'RESTRICT' : $onUpdate;
+        $onUpdate = ($col['foreign_onUpdate']  == 'Cascade') ? 'CASCADE' : $onUpdate;
+        $onDelete = ($col['foreign_onUpdate']  == 'SetDefault') ? 'SET DEFAULT' : $onDelete;
+        
+        return ' ON DELETE '.$onDelete.' ON UPDATE '.$onUpdate;
     }
     
     static function updateTableSql($table) {
@@ -193,11 +211,42 @@ class MySqlSchema
                 $sqls[] = 'ALTER TABLE `'.$tableName.'` MODIFY `'.$col['column'].'` '.self::getType($col['type']).' NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;';
             
             if ( isset( $col['foreign'] ) && $col['foreign'] ) {
+                
                 $sqls[] = 'ALTER TABLE `'.$tableName.'` ADD CONSTRAINT `FK_'.$tableName.'_'.$col['column'].'` '
-                    .' FOREIGN KEY (`'.$col['column'].'`) REFERENCES `'.$col['foreign_table'].'` (`'.$col['foreign_id'].'`); ';
+                    .' FOREIGN KEY (`'.$col['column'].'`) REFERENCES `'.$col['foreign_table'].'` (`'.$col['foreign_id'].'`)'
+                    .self::prepareForeignOn($col).'; ';
                 $sqls[] = 'commit;';
             }
             
+            if ( isset( $col['drop_foreign'] ) && $col['drop_foreign'] ) {
+                $sqls[] = 'ALTER TABLE `'.$tableName.'` DROP FOREIGN KEY `FK_'.$tableName.'_'.$col['drop_foreign'].'`; ';
+                $sqls[] = 'commit;';
+            }
+            
+            if ( isset( $col['drop_primary'] ) && $col['drop_primary'] ) {
+                $sqls[] = 'ALTER TABLE `'.$tableName.'` DROP DROP PRIMARY KEY; ';
+                $sqls[] = 'commit;';
+            }
+            
+            if ( isset( $col['drop_unique'] ) && $col['drop_unique'] ) {
+                $sqls[] = 'ALTER TABLE `'.$tableName.'` DROP INDEX `UNIQUE_'.$tableName.'_'.$col['drop_unique'].'`; ';
+                $sqls[] = 'commit;';
+            }
+            
+            if ( isset( $col['drop_index'] ) && $col['drop_index'] ) {
+                $sqls[] = 'ALTER TABLE `'.$tableName.'` DROP INDEX `'.$tableName.'_idx_'.$col['drop_index'].'`; ';
+                $sqls[] = 'commit;';
+            }
+            
+        }
+        
+        foreach ( $indexes as $key => $index ) {
+        
+            $sql = 'CREATE '.$index['type'].' INDEX '.$tableName.'_idx_'.$index['name']
+                .' ON '.$tableName
+                .' ('.implode(', ', $index['columns']).');';
+            
+            $sqls[] = $sql;
         }
         
         return $sqls;
@@ -224,6 +273,8 @@ class MySqlSchema
     static function rename($tableName, $newTableName) {
         
     }
+    
+    
 
 }
 

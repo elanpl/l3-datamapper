@@ -314,8 +314,9 @@ class Table {
     }
         
             
-    function index($type, $columns) {
+    function index($name, $type, $columns) {
         $this->indexes[] = [
+            'name' => $name,
             'type' => $type,
             'columns' => $columns
         ];
@@ -325,14 +326,34 @@ class Table {
     
             
             
-    function dropPrimary() {
+    function dropPrimary($columnName) {
+        end($this->columns);  
+        $key = key($this->columns);
         
+        $this->columns[$key]['drop_primary'] = $columnName;  
+        return $this;
     }
-    function dropUnique() {
+    function dropUnique($columnName) {
+        end($this->columns);  
+        $key = key($this->columns);
         
+        $this->columns[$key]['drop_unique'] = $columnName;  
+        return $this;
     }
-    function dropIndex() {
+    function dropIndex($name) {
+        end($this->columns);  
+        $key = key($this->columns);
         
+        $this->columns[$key]['drop_index'] = $name;  
+        return $this; 
+    }
+    
+    function dropForeign($columnName){
+        end($this->columns);  
+        $key = key($this->columns);
+        
+        $this->columns[$key]['drop_foreign'] = $columnName;   
+        return $this; 
     }
     
     function after($columnName) {
@@ -349,16 +370,84 @@ class Table {
         
         $this->columns[$key]['foreign'] = true;   
         $this->columns[$key]['foreign_table'] = $table;  
-        $this->columns[$key]['foreign_id'] = $columnName;  
+        $this->columns[$key]['foreign_id'] = $columnName; 
+        $this->columns[$key]['foreign_onUpdate'] = 'NoAction'; 
+        $this->columns[$key]['foreign_onDelete'] = 'NoAction'; 
         return $this; 
     }
     
-    function onDelete($option){
-        
+    function onDeleteSetNull(){
+        end($this->columns);  
+        $key = key($this->columns);
+        $this->columns[$key]['foreign_onDelete'] = 'SetNull'; 
+        return $this; 
     }
-    function dropForeign(){
-        
+    
+    function onDeleteSetDefault(){
+        end($this->columns);  
+        $key = key($this->columns);
+        $this->columns[$key]['foreign_onDelete'] = 'SetDefault'; 
+        return $this; 
     }
+    
+    function onDeleteCascade(){
+        end($this->columns);  
+        $key = key($this->columns);
+        $this->columns[$key]['foreign_onDelete'] = 'Cascade';
+        return $this; 
+    }
+    
+    function onDeleteRestrict(){
+        end($this->columns);  
+        $key = key($this->columns);
+        $this->columns[$key]['foreign_onDelete'] = 'Restrict';
+        return $this; 
+    }
+    
+    function onDeleteNoAction(){
+        end($this->columns);  
+        $key = key($this->columns);
+        $this->columns[$key]['foreign_onDelete'] = 'NoAction';
+        return $this; 
+    }
+    
+    function onUpdateSetNull(){
+        end($this->columns);  
+        $key = key($this->columns);
+        $this->columns[$key]['foreign_onUpdate'] = 'SetNull'; 
+        return $this; 
+    }
+    
+    function onUpdateCascade(){
+        end($this->columns);  
+        $key = key($this->columns);
+        $this->columns[$key]['foreign_onUpdate'] = 'Cascade';
+        return $this; 
+    }
+    
+    function onUpdateSetDefault(){
+        end($this->columns);  
+        $key = key($this->columns);
+        $this->columns[$key]['foreign_onUpdate'] = 'SetDefault';
+        return $this; 
+    }
+    
+    function onUpdateRestrict(){
+        end($this->columns);  
+        $key = key($this->columns);
+        $this->columns[$key]['foreign_onUpdate'] = 'Restrict';
+        return $this; 
+    }
+    
+    function onUpdateNoAction(){
+        end($this->columns);  
+        $key = key($this->columns);
+        $this->columns[$key]['foreign_onUpdate'] = 'NoAction';
+        return $this; 
+    }
+    
+    
+    
     
     function run($showTableExistInfo = true){
         

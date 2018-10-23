@@ -53,7 +53,8 @@ class PostgreSQLSchema
             }
 
             if ( isset( $col['foreign'] ) && $col['foreign'] ) {
-                $sql .= ' references '.$col['foreign_table'].' ('.$col['foreign_id'].') ';
+                $sql .= ' references '.$col['foreign_table'].' ('.$col['foreign_id'].') '
+                        .self::prepareForeignOn($col).'; ';
             }
            
             $delimiter = ', '."\n";
@@ -76,15 +77,29 @@ class PostgreSQLSchema
     
         foreach ( $indexes as $key => $index ) {
         
-            $sql = 'CREATE '.$index['type'].' INDEX '.$tableName.'_idx'.($key+1)
+            $sql = 'CREATE '.$index['type'].' INDEX '.$tableName.'_idx_'.$index['name']
                 .' ON public.'.$tableName
                 .' USING btree ('.implode(', ', $index['columns']).');';
             
             $sqls[] = $sql;
         }
         
-        
         return $sqls;
+    }
+    
+    static function prepareForeignOn($col) {
+        $onDelete = 'NO ACTION';
+        $onDelete = ($col['foreign_onDelete']  == 'SetNull') ? 'SET NULL' : $onDelete;
+        $onDelete = ($col['foreign_onDelete']  == 'SetDefault') ? 'SET DEFAULT' : $onDelete;
+        $onDelete = ($col['foreign_onDelete']  == 'Restrict') ? 'RESTRICT' : $onDelete;
+        $onDelete = ($col['foreign_onDelete']  == 'Cascade') ? 'CASCADE' : $onDelete;
+        $onUpdate = 'NO ACTION';
+        $onUpdate = ($col['foreign_onUpdate']  == 'SetNull') ? 'SET NULL' : $onUpdate;
+        $onUpdate = ($col['foreign_onUpdate']  == 'Restrict') ? 'RESTRICT' : $onUpdate;
+        $onUpdate = ($col['foreign_onUpdate']  == 'Cascade') ? 'CASCADE' : $onUpdate;
+        $onDelete = ($col['foreign_onUpdate']  == 'SetDefault') ? 'SET DEFAULT' : $onDelete;
+        
+        return ' ON DELETE '.$onDelete.' ON UPDATE '.$onUpdate;
     }
     
     static function updateTableSql($table) {
@@ -93,9 +108,30 @@ class PostgreSQLSchema
         $indexes = $table->getIndexes();
         $tableName = $table->tableName;
         
+        foreach ($columns as $col) {
+            if ( isset( $col['drop_foreign'] ) && $col['drop_foreign'] ) {
+                $sqls[] = 'ALTER TABLE '.$tableName.' DROP CONSTRAINT FK_'.$tableName.'_'.$col['drop_foreign'].'; ';
+                $sqls[] = 'commit;';
+            }
+            
+            if ( isset( $col['drop_primary'] ) && $col['drop_primary'] ) {
+                $sqls[] = 'ALTER TABLE '.$tableName.' DROP CONSTRAINT '.$tableName.'_pkey; ';
+                $sqls[] = 'commit;';
+            }
+            
+            if ( isset( $col['drop_unique'] ) && $col['drop_unique'] ) {
+                $sqls[] = 'ALTER TABLE '.$tableName.' DROP INDEX UNIQUE_'.$tableName.'_'.$col['drop_unique'].'; ';
+                $sqls[] = 'commit;';
+            }
+            
+            if ( isset( $col['drop_index'] ) && $col['drop_index'] ) {
+                $sqls[] = 'ALTER TABLE '.$tableName.' DROP INDEX '.$tableName.'_idx_'.$col['drop_index'].'; ';
+                $sqls[] = 'commit;';
+            }
+        }
+        
         $sql = ' ALTER TABLE '.$tableName.' ';
         $delimiter = '';
-        
         foreach ($columns as $col) {
             if ( isset( $col['dropColumn'] ) && $col['dropColumn'] !== null ) {
                 
@@ -121,7 +157,8 @@ class PostgreSQLSchema
                         $sql .= ' DEFAULT '.$col['default'].' ';
                 }
                 if ( isset( $col['foreign'] ) && $col['foreign'] ) {
-                    $sql .= ' references '.$col['foreign_table'].' ('.$col['foreign_id'].') ';
+                    $sql .= ' references '.$col['foreign_table'].' ('.$col['foreign_id'].') '
+                            .self::prepareForeignOn($col).'; ';
                 }
                 
             } else {
@@ -139,15 +176,32 @@ class PostgreSQLSchema
                         $sql .= ' DEFAULT '.$col['default'].' ';
                 }
                 if ( isset( $col['foreign'] ) && $col['foreign'] ) {
-                    $sql .= ' references '.$col['foreign_table'].' ('.$col['foreign_id'].') ';
+                    $sql .= ' references '.$col['foreign_table'].' ('.$col['foreign_id'].') '
+                            .self::prepareForeignOn($col).'; ';
                 }
             }
+            
+            
             $delimiter = ', '."\n";
         }
         
         $sql .= '; ';
         
         $sqls[] = $sql;
+        
+        
+        
+        foreach ( $indexes as $key => $index ) {
+        
+            $sql = 'CREATE '.$index['type'].' INDEX '.$tableName.'_idx_'.$index['name']
+                .' ON public.'.$tableName
+                .' USING btree ('.implode(', ', $index['columns']).');';
+            
+            $sqls[] = $sql;
+        }
+        
+        
+        
         
         return $sqls;
     }
