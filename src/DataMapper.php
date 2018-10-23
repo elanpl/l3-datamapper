@@ -1821,7 +1821,6 @@ class DataMapper implements IteratorAggregate {
 	}
 
 	// --------------------------------------------------------------------
-
 	/**
 	 * Delete
 	 *
@@ -1834,11 +1833,13 @@ class DataMapper implements IteratorAggregate {
 	 */
 	public function delete($object = '', $related_field = '')
 	{
-		if (empty($object) && !is_array($object))
+                if (empty($object) && !is_array($object))
 		{
 			if ( !empty($this->id))
 			{
-				// Begin auto transaction
+                                $this->onDelete();
+                                
+                                // Begin auto transaction
 				$this->_auto_trans_begin();
 
 				// Delete all "has many" and "has one" relations for this object first
@@ -1849,7 +1850,7 @@ class DataMapper implements IteratorAggregate {
 						// do we want cascading delete's?
 						if ($properties['cascade_delete'])
 						{
-							// Prepare model
+                                                    	// Prepare model
 							$class = DataMapper::$config['model_namespace'].$properties['class'];
 							$object = new $class();
 
@@ -1857,17 +1858,20 @@ class DataMapper implements IteratorAggregate {
 							$other_model = $properties['join_other_as'];
 
 							// Determine relationship table name
-							$relationship_table = $this->_get_relationship_table($object, $model);
-
-							// We have to just set NULL for in-table foreign keys that
+                                                        
+							$child_relationship_table = $this->_get_relationship_table($object, $model);
+                                                    	// We have to just set NULL for in-table foreign keys that
 							// are pointing at this object
-							if($relationship_table == $object->table  && // ITFK
+                                                        
+							if ($child_relationship_table == $object->table   // ITFK
+                                                            && $object->table != $this->table 
+                                                            && in_array($other_model . DataMapper::$config['foreign_key_suffix'], $this->fields)
 									 // NOT ITFKs that point at the other object
-									 !($object->table == $this->table && // self-referencing has_one join
-										in_array($other_model . DataMapper::$config['foreign_key_suffix'], $this->fields)) // where the ITFK is for the other object
-									)
-							{
-								$data = array($this_model . DataMapper::$config['foreign_key_suffix'] => NULL);
+								//	 !($object->table == $this->table && // self-referencing has_one join
+							//			in_array($other_model . DataMapper::$config['foreign_key_suffix'], $this->fields)) // where the ITFK is for the other object
+                                                            )
+							{   //jeśli obiekt dziecka jest rodzicem dla parenta, czyli łączą się w kółko
+                                                            	$data = array($this_model . DataMapper::$config['foreign_key_suffix'] => NULL);
 
 								// Update table to remove relationships
                                                                 foreach ($data as $column => $value) {
@@ -1876,11 +1880,11 @@ class DataMapper implements IteratorAggregate {
 								$this->db->where($this_model . DataMapper::$config['foreign_key_suffix'], $this->id);
 								$this->db->update($object->table);
 							}
-							else if ($relationship_table != $this->table)
+							else if ($child_relationship_table != $this->table)
 							{
 								// Delete relation
 								$this->db->where($this_model.DataMapper::$config['foreign_key_suffix'], $this->id)
-                                                                        ->delete($relationship_table);
+                                                                        ->delete($child_relationship_table);
 							}
 							// Else, no reason to delete the relationships on this table
 						}
