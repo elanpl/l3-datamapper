@@ -1837,8 +1837,6 @@ class DataMapper implements IteratorAggregate {
 		{
 			if ( !empty($this->id))
 			{
-                                $this->onDelete();
-                                
                                 // Begin auto transaction
 				$this->_auto_trans_begin();
 
