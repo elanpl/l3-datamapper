@@ -1255,7 +1255,9 @@ class DataMapper implements IteratorAggregate {
 				$this->_handle_default_order_by();
 
 				// Get by objects properties
-				$query = $this->db->where($data)->get($this->table, $limit, $offset);
+                                foreach ( $data as $field => $val ) 
+                                    $this->db->where($field, $val);
+				$query = $this->db->get($this->table, $limit, $offset);
 			} // FIXME: notify user if nothing was set?
 		}
 		else
@@ -3230,8 +3232,9 @@ class DataMapper implements IteratorAggregate {
 	 */
 	public function get_where($where = array(), $limit = NULL, $offset = NULL)
 	{
-		$this->where($where);
-
+                foreach ( $where as $field => $val ) 
+                    $this->where($field, $val);
+                
 		return $this->get($limit, $offset);
 	}
 
@@ -4947,10 +4950,13 @@ class DataMapper implements IteratorAggregate {
 			else
 			{
 				$data = array($this_model . DataMapper::$config['foreign_key_suffix'] => $this->id, $other_model . DataMapper::$config['foreign_key_suffix'] => $object->id);
-
+echo 'dd';
+var_dump($data);
 				// Check if relation already exists
-				$query = $this->db->where($data)->get($relationship_table, NULL, NULL);
-
+                                foreach ( $data as $field => $val ) 
+                                    $this->db->where($field, $val);
+				$query = $this->db->get($relationship_table, NULL, NULL);
+echo 'aa';
 				if ($query->num_rows() == 0)
 				{
 					// If this object has a "has many" relationship with the other object
@@ -5094,6 +5100,8 @@ class DataMapper implements IteratorAggregate {
 	 */
 	protected function _delete_relation($object, $related_field = '')
 	{
+           
+            
 		if (empty($related_field))
 		{
 			$related_field = $object->model;
@@ -5104,6 +5112,7 @@ class DataMapper implements IteratorAggregate {
 
 		if ( !empty($related_properties) && !empty($this->id) && !empty($object->id))
 		{
+                    
 			$this_model = $related_properties['join_self_as'];
 			$other_model = $related_properties['join_other_as'];
 
@@ -5127,7 +5136,8 @@ class DataMapper implements IteratorAggregate {
 				$data = array($this_model . DataMapper::$config['foreign_key_suffix'] => $this->id, $other_model . DataMapper::$config['foreign_key_suffix'] => $object->id);
 
 				// Delete relation
-				$this->db->delete($relationship_table, $data);
+                                
+                                $this->db->delete($relationship_table, $data);
 
 				// Delete reverse direction if a reciprocal self relationship
 				if ($related_properties['reciprocal'])

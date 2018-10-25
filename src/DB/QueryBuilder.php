@@ -255,8 +255,8 @@ abstract class QueryBuilder
         
         $this->binds = [];
         
-        foreach ( $where as $w) {
-            $this->where($w);
+        foreach ( $where as $f => $w) {
+            $this->where($f, $w);
         }
         
         $this->binds = [];
