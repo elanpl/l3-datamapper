@@ -166,7 +166,7 @@ class MySqlSchema
                 
             } elseif ( isset( $col['changeColumn'] ) && $col['changeColumn'] !== null ) {
                 
-                $sql .= $delimiter.' ALTER `'.$col['column'].'` ';
+                $sql .= $delimiter.' CHANGE `'.$col['column'].'` `'.$col['column'].'` ';
                 $sql .= self::getType($col['type']);
                 if (isset( $col['null'] ) && $col['null'] === false )
                     $sql .= ' NOT NULL ';
