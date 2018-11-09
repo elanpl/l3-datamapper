@@ -121,11 +121,11 @@ abstract class QueryBuilder
     }
     
     
-    public function whereIn( $column, $values, $escape_values = false ) {
+    public function whereIn( $column, $values, $escape_values = true ) {
         $this->where[] = [ 'type' => 'in', 'column' => $column, 'value' => $values, 'escape' => $escape_values ];
     }
     
-    public function whereNotIn( $column, $values, $escape_values = false ) {
+    public function whereNotIn( $column, $values, $escape_values = true ) {
         $this->where[] = [ 'type' => 'not_in', 'column' => $column, 'value' => $values, 'escape' => $escape_values ];
     }
     
@@ -133,7 +133,7 @@ abstract class QueryBuilder
         $this->group_by[] = ['column' => $column];
     }
     
-    public function set( $column, $value, $escape_values = false ) {
+    public function set( $column, $value, $escape_values = true ) {
         $this->set[] = [ 'type' => 'value', 'column' => $column, 'value' => $value, 'escape' => $escape_values ];
     }
     
@@ -141,16 +141,21 @@ abstract class QueryBuilder
         $this->from[] = [ 'table' => $tableName, 'alias' => $alias ];
     }
     
-    public function select($field, $escape = false) {
-        $this->select[] = [ 'field' => $field, 'escape' => $escape ];
+    public function select($field, $escape = true) {
+        if(\is_array($field)){
+            foreach($field as $f)
+                $this->select[] = [ 'field' => $f, 'escape' => $escape ];
+        }
+        else
+            $this->select[] = [ 'field' => $field, 'escape' => $escape ];
     }
     
-    public function distinct($field, $escape = false) {
+    public function distinct($field, $escape = true) {
         $this->isDistinct = true;
         $this->select[] = [ 'field' => $field, 'escape' => $escape, 'distinct' => true ];
     }
     
-    public function selectCount($field, $escape = false) {
+    public function selectCount($field, $escape = true) {
         $field_name = explode('.',$field);
         $field_name = end($field_name);
         if ( $field_name == '')
@@ -158,26 +163,26 @@ abstract class QueryBuilder
         $this->select[] = [ 'field' => $field_name, 'escape' => $escape, 'count' => true, 'alias' => 'numrows' ];
     }
     
-    public function selectMax($field, $escape = false) {
+    public function selectMax($field, $escape = true) {
         $field_name = explode('.',$field);
         $field_name = end($field_name);
         
         $this->select[] = [ 'field' => $field, 'escape' => $escape, 'max' => true, 'alias' => 'max_'.$field_name ];
     }
     
-    public function selectMin($field, $escape = false) {
+    public function selectMin($field, $escape = true) {
         $field_name = explode('.',$field);
         $field_name = end($field_name);
         $this->select[] = [ 'field' => $field, 'escape' => $escape, 'min' => true, 'alias' => 'min_'.$field_name ];
     }
     
-    public function selectAvg($field, $escape = false) {
+    public function selectAvg($field, $escape = true) {
         $field_name = explode('.',$field);
         $field_name = end($field_name);
         $this->select[] = [ 'field' => $field, 'escape' => $escape, 'avg' => true, 'alias' => 'avg_'.$field_name ];
     }
     
-    public function selectSum($field, $escape = false) {
+    public function selectSum($field, $escape = true) {
         $field_name = explode('.',$field);
         $field_name = end($field_name);
         $this->select[] = [ 'field' => $field, 'escape' => $escape, 'sum' => true, 'alias' => 'sum_'.$field_name ];
@@ -255,8 +260,8 @@ abstract class QueryBuilder
         
         $this->binds = [];
         
-        foreach ( $where as $f => $w) {
-            $this->where($f, $w);
+        foreach ( $where as $w) {
+            $this->where($w);
         }
         
         $this->binds = [];
@@ -387,16 +392,12 @@ abstract class QueryBuilder
                                 $w['escape'] = $this->escapeString($w['value']);
                         }
 
-                        if ($w['type'] == 'in' || $w['type'] == 'not_in' ) {
-                            $_where =  $w['column'].( $w['type'] == 'in' ? ' in ' : ' not in ').'( ';
-                            $comma = '';
-                            foreach ( $w['value'] as $val )  {
-                               $_where .= $comma.' ?';
-                               $comma = ',';
-                               $this->binds[] = str_replace("'", "", $val);
-                            } 
-                            $_where.= ')';
-                            $where[ ] = $_where;
+                        if ($w['type'] == 'in') {
+                            $where[ ] = $w['column'].' in ( ? )';
+                            $this->binds[] = implode(', ',$w['value']);
+                        } elseif ($w['type'] == 'not_in') {
+                            $where[] = $w['column'].' not in ( ? )';
+                            $this->binds[] = implode(', ',$w['value']);
                         } elseif ( $w['value'] === null )
                             $where[] = $w['column']." null ";
                         else {
