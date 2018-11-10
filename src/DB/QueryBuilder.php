@@ -92,7 +92,7 @@ abstract class QueryBuilder
         return $this->query( 'TRUNCATE ? ', [$tableName] );
     }
     
-    public function where( $column, $value, $escape_values = true ) {
+    public function where( $column, $value,$escape_values = false ) {
             
         $column = explode(' ', $column);
         if (!isset($column[1]) && $value === null)
@@ -121,11 +121,11 @@ abstract class QueryBuilder
     }
     
     
-    public function whereIn( $column, $values, $escape_values = true ) {
+    public function whereIn( $column, $values, $escape_values = false ) {
         $this->where[] = [ 'type' => 'in', 'column' => $column, 'value' => $values, 'escape' => $escape_values ];
     }
     
-    public function whereNotIn( $column, $values, $escape_values = true ) {
+    public function whereNotIn( $column, $values, $escape_values = false ) {
         $this->where[] = [ 'type' => 'not_in', 'column' => $column, 'value' => $values, 'escape' => $escape_values ];
     }
     
@@ -133,7 +133,7 @@ abstract class QueryBuilder
         $this->group_by[] = ['column' => $column];
     }
     
-    public function set( $column, $value, $escape_values = true ) {
+    public function set( $column, $value, $escape_values = false ) {
         $this->set[] = [ 'type' => 'value', 'column' => $column, 'value' => $value, 'escape' => $escape_values ];
     }
     
