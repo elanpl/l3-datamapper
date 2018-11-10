@@ -92,7 +92,7 @@ abstract class QueryBuilder
         return $this->query( 'TRUNCATE ? ', [$tableName] );
     }
     
-    public function where( $column, $value,$escape_values = false ) {
+    public function where( $column, $value, $escape_values = false ) {
             
         $column = explode(' ', $column);
         if (!isset($column[1]) && $value === null)
@@ -141,7 +141,7 @@ abstract class QueryBuilder
         $this->from[] = [ 'table' => $tableName, 'alias' => $alias ];
     }
     
-    public function select($field, $escape = true) {
+    public function select($field, $escape = false) {
         if(\is_array($field)){
             foreach($field as $f)
                 $this->select[] = [ 'field' => $f, 'escape' => $escape ];
@@ -150,12 +150,12 @@ abstract class QueryBuilder
             $this->select[] = [ 'field' => $field, 'escape' => $escape ];
     }
     
-    public function distinct($field, $escape = true) {
+    public function distinct($field, $escape = false) {
         $this->isDistinct = true;
         $this->select[] = [ 'field' => $field, 'escape' => $escape, 'distinct' => true ];
     }
     
-    public function selectCount($field, $escape = true) {
+    public function selectCount($field, $escape = false) {
         $field_name = explode('.',$field);
         $field_name = end($field_name);
         if ( $field_name == '')
@@ -163,26 +163,26 @@ abstract class QueryBuilder
         $this->select[] = [ 'field' => $field_name, 'escape' => $escape, 'count' => true, 'alias' => 'numrows' ];
     }
     
-    public function selectMax($field, $escape = true) {
+    public function selectMax($field, $escape = false) {
         $field_name = explode('.',$field);
         $field_name = end($field_name);
         
         $this->select[] = [ 'field' => $field, 'escape' => $escape, 'max' => true, 'alias' => 'max_'.$field_name ];
     }
     
-    public function selectMin($field, $escape = true) {
+    public function selectMin($field, $escape = false) {
         $field_name = explode('.',$field);
         $field_name = end($field_name);
         $this->select[] = [ 'field' => $field, 'escape' => $escape, 'min' => true, 'alias' => 'min_'.$field_name ];
     }
     
-    public function selectAvg($field, $escape = true) {
+    public function selectAvg($field, $escape = false) {
         $field_name = explode('.',$field);
         $field_name = end($field_name);
         $this->select[] = [ 'field' => $field, 'escape' => $escape, 'avg' => true, 'alias' => 'avg_'.$field_name ];
     }
     
-    public function selectSum($field, $escape = true) {
+    public function selectSum($field, $escape = false) {
         $field_name = explode('.',$field);
         $field_name = end($field_name);
         $this->select[] = [ 'field' => $field, 'escape' => $escape, 'sum' => true, 'alias' => 'sum_'.$field_name ];
