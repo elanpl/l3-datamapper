@@ -260,8 +260,8 @@ abstract class QueryBuilder
         
         $this->binds = [];
         
-        foreach ( $where as $w) {
-            $this->where($w);
+        foreach ( $where as $f => $w) {
+            $this->where($f, $w);
         }
         
         $this->binds = [];
@@ -392,12 +392,16 @@ abstract class QueryBuilder
                                 $w['escape'] = $this->escapeString($w['value']);
                         }
 
-                        if ($w['type'] == 'in') {
-                            $where[ ] = $w['column'].' in ( ? )';
-                            $this->binds[] = implode(', ',$w['value']);
-                        } elseif ($w['type'] == 'not_in') {
-                            $where[] = $w['column'].' not in ( ? )';
-                            $this->binds[] = implode(', ',$w['value']);
+                        if ($w['type'] == 'in' || $w['type'] == 'not_in' ) {
+                            $_where =  $w['column'].( $w['type'] == 'in' ? ' in ' : ' not in ').'( ';
+                            $comma = '';
+                            foreach ( $w['value'] as $val )  {
+                               $_where .= $comma.' ?';
+                               $comma = ',';
+                               $this->binds[] = str_replace("'", "", $val);
+                            } 
+                            $_where.= ')';
+                            $where[ ] = $_where;
                         } elseif ( $w['value'] === null )
                             $where[] = $w['column']." null ";
                         else {
