@@ -2534,12 +2534,13 @@ class DataMapper implements IteratorAggregate {
 	 * @param	array|bool $binds Array of values to bind (see CodeIgniter)
 	 * @return	DataMapper Returns self for method chaining.
 	 */
-	public function query($sql, $binds = FALSE)
+	public function query($sql, $binds = [], $withResult = true)
 	{
 		// Get by objects properties
 		$query = $this->db->query($sql, $binds);
 
-		$this->_process_query($query);
+        if ( $withResult )
+	       $this->_process_query($query);
 
 		// For method chaining
 		return $this;

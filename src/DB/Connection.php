@@ -163,12 +163,14 @@ class Connection
     }
     
     public function queryArray($sqlArray) {
-        return $this->db_connections[$this->current_connection]->queryArray( $sqlArray ); 
+        $this->db_connections[$this->current_connection]->queryArray( $sqlArray ); 
+        return $this;
     }
 
     
     public function query($sql, $binds = []) {
-        return $this->db_connections[$this->current_connection]->query( $sql, $binds ); 
+        $this->db_connections[$this->current_connection]->query( $sql, $binds ); 
+        return $this;
     }
     
     public function row() {
