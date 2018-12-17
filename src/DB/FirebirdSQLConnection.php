@@ -33,8 +33,8 @@ class FirebirdSQLConnection extends QueryBuilder
     function Login() {
         if (! $this->conn) {
             try {
-                $dsn = $this->db_port === null ? "firebird:dbname=".$this->db_server.":/".$this->db_database
-                                                : "firebird:dbname=".$this->db_server."/".$this->db_port.":/".$this->db_database;
+                $dsn = $this->db_port === null ? "firebird:dbname=".$this->db_server.":".$this->db_database
+                                                : "firebird:dbname=".$this->db_server."/".$this->db_port.":".$this->db_database;
                 $this->conn =  new PDO($dsn, $this->db_user, $this->db_pass);                         
                 $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT);
             } catch(PDOException $e) {
