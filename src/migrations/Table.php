@@ -298,12 +298,22 @@ class Table {
     function first() {
     }    
     
-    function renameColumn($columnName, $newColumnName) {
-        $this->columns[] = [
-            'column' => $columnName,
-            'newName' => $newColumnName,
-            'renameColumn' => true,
-        ];
+    // function renameColumn($columnName, $newColumnName) {
+    //     $this->columns[] = [
+    //         'column' => $columnName,
+    //         'newName' => $newColumnName,
+    //         'renameColumn' => true,
+    //     ];
+    // }
+
+    function renameColumn($newColumnName){
+        end($this->columns);  
+        $key = key($this->columns);
+
+        $this->columns[$key]['newName'] = $newColumnName;
+        $this->columns[$key]['renameColumn'] = true;
+
+        return $this; 
     }
     
     function dropColumn($columnName) {
@@ -445,9 +455,6 @@ class Table {
         $this->columns[$key]['foreign_onUpdate'] = 'NoAction';
         return $this; 
     }
-    
-    
-    
     
     function run($showTableExistInfo = true){
         

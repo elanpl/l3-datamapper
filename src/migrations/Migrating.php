@@ -29,11 +29,14 @@ class Migrating {
                 $this->reset();
                 break;
             case 'rollback':
-                $this->rolback( (int)$param2 );
+                $this->rollback( (int)$param2 );
                 break;
-            case 'make_migration':
-                $this->makeMigration($param2);
-                break;   
+            case 'make_create_migration':
+                $this->makeCreateMigration($param2);
+                break;
+            case 'make_update_migration':
+                $this->makeUpdateMigration($param2);
+                break;      
             case 'seed': 
                 $this->seed($param2);
                 break;                 
@@ -62,7 +65,8 @@ class Migrating {
                     ."      reset                   Rollback all migrations\n"
                     ."      rollback                Rollback the last migration\n"
                     ."      rollback step           Rollback last steps(int) migrations \n"
-                    ."      make_migration filename Create migration file\n"    
+                    ."      make_create_migration filename Create a create migration file\n"   
+                    ."      make_update_migration filename Create an update migration file\n"     
                     ."      make_seed filename      Create seed file\n"    
                     ."      status                  Show the status of each migration\n";
                 
@@ -131,7 +135,7 @@ class Migrating {
         echo 'Reset ended'."\n";
     }
     
-    private function rolback($rolback_step_count = 0){
+    private function rollback($rolback_step_count = 0){
         $stepM = new MigrationModel();
         $stepM->select_max('step')->get();
 
@@ -165,14 +169,27 @@ class Migrating {
         }
     }
     
-    private function makeMigration($create_file) {
+    private function makeCreateMigration($create_file) {
         if ( $create_file == '') {
             echo 'Unknown filename'."\n";
         } else {
-            $content = file_get_contents($this->vendor_path.'/migrationFile.php');
+            $content = file_get_contents($this->vendor_path.'/createMigrationFile.php');
             $create_file = self::generateFileSlug($create_file, false);
             $fileName = date('YmdHis').'_'.$create_file.'.php';
-            $content = str_replace('MIGRATION_FILE', $create_file, $content);
+            $content = str_replace('CREATE_MIGRATION_FILE', $create_file, $content);
+            file_put_contents($this->migrations_path.'/'.$fileName, $content);
+            echo 'File '.$fileName.' created'."\n";
+        }
+    }
+
+    private function makeUpdateMigration($create_file) {
+        if ( $create_file == '') {
+            echo 'Unknown filename'."\n";
+        } else {
+            $content = file_get_contents($this->vendor_path.'/updateMigrationFile.php');
+            $create_file = self::generateFileSlug($create_file, false);
+            $fileName = date('YmdHis').'_'.$create_file.'.php';
+            $content = str_replace('UPDATE_MIGRATION_FILE', $create_file, $content);
             file_put_contents($this->migrations_path.'/'.$fileName, $content);
             echo 'File '.$fileName.' created'."\n";
         }

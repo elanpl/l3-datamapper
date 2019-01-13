@@ -162,7 +162,18 @@ class MySqlSchema
                 
             } elseif ( isset( $col['renameColumn'] ) && $col['renameColumn'] !== null ) {
                 
-                $sql .= $delimiter.' RENAME COLUMN `'.$col['column'].'` TO `'.$col['newName'].'` ';
+                //$sql .= $delimiter.' RENAME COLUMN `'.$col['column'].'` TO `'.$col['newName'].'` ';
+
+                $sql .= $delimiter.' CHANGE `'.$col['column'].'` `'.$col['newName'].'` ';
+                $sql .= self::getType($col['type']);
+                if (isset( $col['null'] ) && $col['null'] === false )
+                    $sql .= ' NOT NULL ';
+                if ( isset( $col['default'] ) && $col['default'] !== null ) {
+                    if ( $col['default'] === 'current')
+                        $sql .= ' DEFAULT CURRENT_TIMESTAMP(1)';
+                    else
+                        $sql .= ' DEFAULT '.$col['default'].' ';
+                }
                 
             } elseif ( isset( $col['changeColumn'] ) && $col['changeColumn'] !== null ) {
                 
