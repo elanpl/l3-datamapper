@@ -83,7 +83,7 @@ class Migrating {
 
         $stepM = new MigrationModel();
         $stepM->select_max('step')->get();
-        $step = (int)$stepM->step +1; 
+        $step = (int)$stepM->max_step + 1; 
 
         
         foreach ( $files as $file) {
@@ -119,18 +119,20 @@ class Migrating {
         echo 'Reset start'."\n";
         $migration = new MigrationModel();
         $migratedFiles = $migration->order_by('id','desc')->get();   
-        foreach ($migratedFiles as $m) {
-            echo 'Rollback '.$file."\n";
-            include( $this->migrations_path.'/'.$m->file );
-            $className = substr($m->file, 15, strlen($m->file) - 15 - 4 );
+        foreach ($migratedFiles as $mFile) {
+            echo 'Rollback '.$mFile->file."\n";
+            include( $this->migrations_path.'/'.$mFile->file );
+            $className = substr($mFile->file, 15, strlen($mFile->file) - 15 - 4 );
+            $className = '\\migrations\\'.$className;
+
             $m = new $className();
             $m->down();
 
             $del = new MigrationModel();
-            $del->where('file', $file);
+            $del->where('file', $mFile->file)->get();
             $del->delete();
 
-            echo 'Rollback '.$file.' done.'."\n";
+            echo 'Rollback '.$mFile->file.' done.'."\n";
         }
 
         echo 'Reset ended'."\n";
@@ -142,26 +144,28 @@ class Migrating {
 
         if ( $stepM->result_count() > 0 ) {
             if ( $rolback_step_count > 0) {
-                $step = $stepM->step - $rolback_step_count;
+                $step = $stepM->max_step - $rolback_step_count;
             } else {
-                $step = $stepM->step - 1; 
+                $step = $stepM->max_step; 
             }
 
             $rolbackM = new MigrationModel();
             $rolbackM->where('step >=',$step)->get();
 
-            foreach ($rolbackM as $m) {
-                echo 'Rollback '.$file."\n";
-                include( $this->migrations_path.'/'.$m->file );
-                $className = substr($m->file, 15, strlen($m->file) - 15 - 4 );
+            foreach ($rolbackM as $mFile) {
+                echo 'Rollback '.$mFile."\n";
+                include( $this->migrations_path.'/'.$mFile->file );
+                $className = substr($mFile->file, 15, strlen($mFile->file) - 15 - 4 );
+                $className = '\\migrations\\'.$className;
+
                 $m = new $className();
                 $m->down();
 
                 $del = new MigrationModel();
-                $del->where('file', $file);
+                $del->where('file', $mFile->file)->get();
                 $del->delete();
 
-                echo 'Rollback '.$file.' done.'."\n";
+                echo 'Rollback '.$mFile->file.' done.'."\n";
             }
 
             echo 'Rollback ended'."\n";

@@ -266,7 +266,7 @@ class MySqlSchema
     static function dropTableSql($table) {
         $tableName = $table->tableName;
         
-        $sql = ' DROP TABLE '.$tableName.';';
+        $sql = ' DROP TABLE `'.$tableName.'`;';
         
         $sqls[] = $sql;
         return $sqls;

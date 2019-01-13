@@ -15,6 +15,7 @@ class CREATE_MIGRATION_FILE {
     
     public function down() {
         $table = Table::drop('CREATE_MIGRATION_FILE');
+        return $table->run();
     }
 }
 

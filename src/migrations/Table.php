@@ -38,8 +38,7 @@ class Table {
     }
     
     static function drop($tableName, $dbName = '') {
-        $table = new Table('drop', $tableName);
-        $table->dropTable();
+        return new Table('drop', $tableName);
     }
     
     function increments($columnName) {   
@@ -504,18 +503,5 @@ class Table {
         }
         
         return $result;
-    }
-    
-    function dropTable($showTableExistInfo = true){
-        if ( $this->connection->tableExists($this->tableName) ) {
-            if ( $this->connection->query( 'drop table ?', [$this->tableName] ) )
-                echo " - Table ".$this->tableName." droped.\n";
-            else
-                echo " - Error while droping table ".$this->tableName.".\n";
-        } else {
-            if ($showTableExistInfo)
-                echo ' - Table '.$this->tableName.' not exists.'."\n";
-        }
-    }
-    
+    }    
 }
