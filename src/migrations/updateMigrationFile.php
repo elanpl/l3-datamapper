@@ -13,7 +13,10 @@ class UPDATE_MIGRATION_FILE {
     }
     
     public function down() {
+        $table = Table::update('UPDATE_MIGRATION_FILE');
         
+        
+        return $table->run();
     }
 }
 

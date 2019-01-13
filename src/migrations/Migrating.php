@@ -104,10 +104,11 @@ class Migrating {
                         $migration = new MigrationModel();
                         $migration->file = $file;
                         $migration->step = $step;
-                        $migration->save();
+                        $migration->save(); 
+                        $step++;
                     }  
                 } else {
-                    //echo ' - Already migrated '.$file."\n";
+                    echo ' - Already migrated '.$file."\n";
                 } 
             }
         }
@@ -119,7 +120,7 @@ class Migrating {
         $migration = new MigrationModel();
         $migratedFiles = $migration->order_by('id','desc')->get();   
         foreach ($migratedFiles as $m) {
-            echo 'Rolback '.$file."\n";
+            echo 'Rollback '.$file."\n";
             include( $this->migrations_path.'/'.$m->file );
             $className = substr($m->file, 15, strlen($m->file) - 15 - 4 );
             $m = new $className();
@@ -129,7 +130,7 @@ class Migrating {
             $del->where('file', $file);
             $del->delete();
 
-            echo 'Rolback '.$file.' done.'."\n";
+            echo 'Rollback '.$file.' done.'."\n";
         }
 
         echo 'Reset ended'."\n";
@@ -150,7 +151,7 @@ class Migrating {
             $rolbackM->where('step >=',$step)->get();
 
             foreach ($rolbackM as $m) {
-                echo 'Rolback '.$file."\n";
+                echo 'Rollback '.$file."\n";
                 include( $this->migrations_path.'/'.$m->file );
                 $className = substr($m->file, 15, strlen($m->file) - 15 - 4 );
                 $m = new $className();
@@ -160,12 +161,12 @@ class Migrating {
                 $del->where('file', $file);
                 $del->delete();
 
-                echo 'Rolback '.$file.' done.'."\n";
+                echo 'Rollback '.$file.' done.'."\n";
             }
 
-            echo 'Rolback ended'."\n";
+            echo 'Rollback ended'."\n";
         } else {
-            echo 'Nothing to rolback'."\n";
+            echo 'Nothing to rollback'."\n";
         }
     }
     
