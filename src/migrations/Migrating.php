@@ -144,7 +144,7 @@ class Migrating {
             if ( $rolback_step_count > 0) {
                 $step = $stepM->step - $rolback_step_count;
             } else {
-                $step = $stepM->step; 
+                $step = $stepM->step - 1; 
             }
 
             $rolbackM = new MigrationModel();
