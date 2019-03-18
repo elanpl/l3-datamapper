@@ -530,7 +530,7 @@ class DataMapper implements IteratorAggregate
                 // Force all other has_one ITFKs to integers on get
                 foreach ($this->has_one as $related => $rel_props) {
                     //TODO: tu jest coś nie tak bo related to index w tabeli a nie pole, tak jakby się nie przepisało jak należy jak uproszczone has_one
-                    $field = $related.DataMapper::$config['foreign_key_suffix'];
+                    $field = $related.$this->foreign_key_suffix;
 
                     if (in_array($field, $this->fields) &&
                         (!isset($this->validation[$field]) || // does not have a validation key or...
@@ -1581,7 +1581,7 @@ class DataMapper implements IteratorAggregate
                     $rf = $o->model;
                 }
                 $related_properties = $this->_get_related_properties($rf);
-                $other_column = $related_properties['join_other_as'].DataMapper::$config['foreign_key_suffix'];
+                $other_column = $related_properties['join_other_as'].$this->foreign_key_suffix;
                 if (isset($this->has_one[$rf]) && in_array($other_column, $this->fields)) {
                     // unset, so that it doesn't get re-saved later.
                     unset($objects[$index]);
@@ -1776,22 +1776,22 @@ class DataMapper implements IteratorAggregate
 
                             if ($child_relationship_table == $object->table   // ITFK
                                                             && $object->table != $this->table
-                                                            && in_array($other_model.DataMapper::$config['foreign_key_suffix'], $this->fields)
+                                                            && in_array($other_model.$this->foreign_key_suffix, $this->fields)
                                      // NOT ITFKs that point at the other object
                                 //	 !($object->table == $this->table && // self-referencing has_one join
-                            //			in_array($other_model . DataMapper::$config['foreign_key_suffix'], $this->fields)) // where the ITFK is for the other object
+                            //			in_array($other_model . $this->foreign_key_suffix, $this->fields)) // where the ITFK is for the other object
                                                             ) {   //jeśli obiekt dziecka jest rodzicem dla parenta, czyli łączą się w kółko
-                                                                $data = array($this_model.DataMapper::$config['foreign_key_suffix'] => null);
+                                                                $data = array($this_model.$this->foreign_key_suffix => null);
 
                                 // Update table to remove relationships
                                 foreach ($data as $column => $value) {
                                     $this->db->set($column, $value);
                                 }
-                                $this->db->where($this_model.DataMapper::$config['foreign_key_suffix'], $this->id);
+                                $this->db->where($this_model.$this->foreign_key_suffix, $this->id);
                                 $this->db->update($object->table);
                             } elseif ($child_relationship_table != $this->table) {
                                 // Delete relation
-                                $this->db->where($this_model.DataMapper::$config['foreign_key_suffix'], $this->id)
+                                $this->db->where($this_model.$this->foreign_key_suffix, $this->id)
                                                                         ->delete($child_relationship_table);
                             }
                             // Else, no reason to delete the relationships on this table
@@ -1933,9 +1933,9 @@ class DataMapper implements IteratorAggregate
                     if ($relationship_table == $object->table && // ITFK
                              // NOT ITFKs that point at the other object
                              !($object->table == $this->table && // self-referencing has_one join
-                                in_array($other_model.DataMapper::$config['foreign_key_suffix'], $this->fields)) // where the ITFK is for the other object
+                                in_array($other_model.$this->foreign_key_suffix, $this->fields)) // where the ITFK is for the other object
                             ) {
-                        $data = array($this_model.DataMapper::$config['foreign_key_suffix'] => null);
+                        $data = array($this_model.$this->foreign_key_suffix => null);
 
                         // Update table to remove all ITFK relations
                         foreach ($data as $column => $value) {
@@ -2266,7 +2266,7 @@ class DataMapper implements IteratorAggregate
             if (!$this->db->isEmptyWhere()) {
                 // if the relationship table is different from our table, include our table in the count query
                 if ($relationship_table != $this->table) {
-                    $this->db->join($this->table, $this->table.'.id = '.$relationship_table.'.'.$this_model.DataMapper::$config['foreign_key_suffix'], 'LEFT OUTER');
+                    $this->db->join($this->table, $this->table.'.id = '.$relationship_table.'.'.$this_model.$this->foreign_key_suffix, 'LEFT OUTER');
                 }
 
                 $this->db->groupWhere();
@@ -2277,22 +2277,22 @@ class DataMapper implements IteratorAggregate
             if ($relationship_table == $object->table && // ITFK
                      // NOT ITFKs that point at the other object
                      !($object->table == $this->table && // self-referencing has_one join
-                        in_array($other_model.DataMapper::$config['foreign_key_suffix'], $this->fields)) // where the ITFK is for the other object
+                        in_array($other_model.$this->foreign_key_suffix, $this->fields)) // where the ITFK is for the other object
                     ) {
                 // ITFK on the other object's table
-                $this->db->where('id', $this->parent['id'])->where($this_model.DataMapper::$config['foreign_key_suffix'].' IS NOT NULL');
+                $this->db->where('id', $this->parent['id'])->where($this_model.$this->foreign_key_suffix.' IS NOT NULL');
             } else {
                 // All other cases
-                $this->db->where($relationship_table.'.'.$other_model.DataMapper::$config['foreign_key_suffix'], $this->parent['id']);
+                $this->db->where($relationship_table.'.'.$other_model.$this->foreign_key_suffix, $this->parent['id']);
             }
             if (!empty($exclude_ids)) {
-                $this->db->where_not_in($relationship_table.'.'.$this_model.DataMapper::$config['foreign_key_suffix'], $exclude_ids);
+                $this->db->where_not_in($relationship_table.'.'.$this_model.$this->foreign_key_suffix, $exclude_ids);
             }
             if ($column == 'id') {
-                $column = $relationship_table.'.'.$this_model.DataMapper::$config['foreign_key_suffix'];
+                $column = $relationship_table.'.'.$this_model.$this->foreign_key_suffix;
             }
             if (!empty($related_id)) {
-                $this->db->where($this_model.DataMapper::$config['foreign_key_suffix'], $related_id);
+                $this->db->where($this_model.$this->foreign_key_suffix, $related_id);
             }
             $this->db->from($relationship_table);
         } else {
@@ -4253,8 +4253,8 @@ class DataMapper implements IteratorAggregate
             $relationship_as = str_replace('.', '_', $name_prepend.$related_field.'_'.$relationship_table);
         }
 
-        $other_column = $other_model.DataMapper::$config['foreign_key_suffix'];
-        $this_column = $this_model.DataMapper::$config['foreign_key_suffix'];
+        $other_column = $other_model.$this->foreign_key_suffix;
+        $this_column = $this_model.$this->foreign_key_suffix;
 
         if (is_null($db)) {
             $db = $this->db;
@@ -4724,22 +4724,22 @@ class DataMapper implements IteratorAggregate
 
             if ($relationship_table == $this->table &&
                     // catch for self relationships.
-                    in_array($other_model.DataMapper::$config['foreign_key_suffix'], $this->fields)) {
-                $this->{$other_model.DataMapper::$config['foreign_key_suffix']} = $object->id;
+                    in_array($other_model.$this->foreign_key_suffix, $this->fields)) {
+                $this->{$other_model.$this->foreign_key_suffix} = $object->id;
                 $ret = $this->save();
                 // remove any one-to-one relationships with the other object
                 $this->_remove_other_one_to_one($related_field, $object);
 
                 return $ret;
             } elseif ($relationship_table == $object->table) {
-                $object->{$this_model.DataMapper::$config['foreign_key_suffix']} = $this->id;
+                $object->{$this_model.$this->foreign_key_suffix} = $this->id;
                 $ret = $object->save();
                 // remove any one-to-one relationships with this object
                 $object->_remove_other_one_to_one($other_field, $this);
 
                 return $ret;
             } else {
-                $data = array($this_model.DataMapper::$config['foreign_key_suffix'] => $this->id, $other_model.DataMapper::$config['foreign_key_suffix'] => $object->id);
+                $data = array($this_model.$this->foreign_key_suffix => $this->id, $other_model.$this->foreign_key_suffix => $object->id);
                 echo 'dd';
                 var_dump($data);
                 // Check if relation already exists
@@ -4754,14 +4754,14 @@ class DataMapper implements IteratorAggregate
                         // If the other object has a "has one" relationship with this object
                         if (isset($object->has_one[$other_field])) {
                             // And it has an existing relation
-                            $query = $this->db->where(array($other_model.DataMapper::$config['foreign_key_suffix'] => $object->id))->get($relationship_table, 1, 0);
+                            $query = $this->db->where(array($other_model.$this->foreign_key_suffix => $object->id))->get($relationship_table, 1, 0);
 
                             if ($query->num_rows() > 0) {
                                 // Find and update the other objects existing relation to relate with this object
                                 foreach ($data as $column => $value) {
                                     $this->db->set($column, $value);
                                 }
-                                $this->db->where($other_model.DataMapper::$config['foreign_key_suffix'], $object->id);
+                                $this->db->where($other_model.$this->foreign_key_suffix, $object->id);
                                 $this->db->update($relationship_table);
                             } else {
                                 // Add the relation since one doesn't exist
@@ -4775,7 +4775,7 @@ class DataMapper implements IteratorAggregate
 
                             // Self relationships can be defined as reciprocal -- save the reverse relationship at the same time
                             if ($related_properties['reciprocal']) {
-                                $data = array($this_model.DataMapper::$config['foreign_key_suffix'] => $object->id, $other_model.DataMapper::$config['foreign_key_suffix'] => $this->id);
+                                $data = array($this_model.$this->foreign_key_suffix => $object->id, $other_model.$this->foreign_key_suffix => $this->id);
                                 $this->db->insert($relationship_table, $data);
                             }
 
@@ -4785,14 +4785,14 @@ class DataMapper implements IteratorAggregate
                     // If this object has a "has one" relationship with the other object
                     elseif (isset($this->has_one[$related_field])) {
                         // And it has an existing relation
-                        $query = $this->db->where(array($this_model.DataMapper::$config['foreign_key_suffix'] => $this->id))->get($relationship_table, 1, 0);
+                        $query = $this->db->where(array($this_model.$this->foreign_key_suffix => $this->id))->get($relationship_table, 1, 0);
 
                         if ($query->num_rows() > 0) {
                             // Find and update the other objects existing relation to relate with this object
                             foreach ($data as $column => $value) {
                                 $this->db->set($column, $value);
                             }
-                            $this->db->where($this_model.DataMapper::$config['foreign_key_suffix'], $this->id);
+                            $this->db->where($this_model.$this->foreign_key_suffix, $this->id);
                             $this->db->update($relationship_table);
                         } else {
                             // Add the relation since one doesn't exist
@@ -4842,7 +4842,7 @@ class DataMapper implements IteratorAggregate
             return;
         }
         // This should be a one-to-one relationship with an ITFK if we got this far.
-        $other_column = $related_properties['join_other_as'].DataMapper::$config['foreign_key_suffix'];
+        $other_column = $related_properties['join_other_as'].$this->foreign_key_suffix;
         $c = get_class($this);
         $update = new $c();
 
@@ -4885,14 +4885,14 @@ class DataMapper implements IteratorAggregate
 
             if ($relationship_table == $this->table &&
                     // catch for self relationships.
-                    in_array($other_model.DataMapper::$config['foreign_key_suffix'], $this->fields)) {
-                $this->{$other_model.DataMapper::$config['foreign_key_suffix']} = null;
+                    in_array($other_model.$this->foreign_key_suffix, $this->fields)) {
+                $this->{$other_model.$this->foreign_key_suffix} = null;
                 $this->save();
             } elseif ($relationship_table == $object->table) {
-                $object->{$this_model.DataMapper::$config['foreign_key_suffix']} = null;
+                $object->{$this_model.$this->foreign_key_suffix} = null;
                 $object->save();
             } else {
-                $data = array($this_model.DataMapper::$config['foreign_key_suffix'] => $this->id, $other_model.DataMapper::$config['foreign_key_suffix'] => $object->id);
+                $data = array($this_model.$this->foreign_key_suffix => $this->id, $other_model.$this->foreign_key_suffix => $object->id);
 
                 // Delete relation
 
@@ -4900,7 +4900,7 @@ class DataMapper implements IteratorAggregate
 
                 // Delete reverse direction if a reciprocal self relationship
                 if ($related_properties['reciprocal']) {
-                    $data = array($this_model.DataMapper::$config['foreign_key_suffix'] => $object->id, $other_model.DataMapper::$config['foreign_key_suffix'] => $this->id);
+                    $data = array($this_model.$this->foreign_key_suffix => $object->id, $other_model.$this->foreign_key_suffix => $this->id);
                     $this->db->delete($relationship_table, $data);
                 }
             }
@@ -4944,14 +4944,14 @@ class DataMapper implements IteratorAggregate
 
         if (isset($this->has_one[$related_field])) {
             // see if the relationship is in this table
-            if (in_array($other_model.DataMapper::$config['foreign_key_suffix'], $this->fields)) {
+            if (in_array($other_model.$this->foreign_key_suffix, $this->fields)) {
                 return $this->table;
             }
         }
 
         if (isset($object->has_one[$other_field])) {
             // see if the relationship is in this table
-            if (in_array($this_model.DataMapper::$config['foreign_key_suffix'], $object->fields)) {
+            if (in_array($this_model.$this->foreign_key_suffix, $object->fields)) {
                 return $object->table;
             }
         }
@@ -5158,15 +5158,15 @@ class DataMapper implements IteratorAggregate
             foreach ($field as $column => $value) {
                 $this->db->set($column, $value);
             }
-            $this->db->where($this_model.DataMapper::$config['foreign_key_suffix'], $this->id);
+            $this->db->where($this_model.$this->foreign_key_suffix, $this->id);
             $this->db->update($relationship_table);
         } else {
             foreach ($object as $obj) {
                 foreach ($field as $column => $value) {
                     $this->db->set($column, $value);
                 }
-                $this->db->where($this_model.DataMapper::$config['foreign_key_suffix'], $this->id);
-                $this->db->where($other_model.DataMapper::$config['foreign_key_suffix'], $obj->id);
+                $this->db->where($this_model.$this->foreign_key_suffix, $this->id);
+                $this->db->where($other_model.$this->foreign_key_suffix, $obj->id);
                 $this->db->update($relationship_table);
             }
         }
@@ -6054,7 +6054,7 @@ class DataMapper implements IteratorAggregate
             if (!isset($this->{$field}) && !in_array('allow_null', $rules)) {
                 if (isset($this->has_one[$field])) {
                     // automatically process $item_id values
-                    $field = $field.DataMapper::$config['foreign_key_suffix'];
+                    $field = $field.$this->foreign_key_suffix;
                     if (!isset($this->{$field}) && !in_array('allow_null', $rules)) {
                         continue;
                     }
