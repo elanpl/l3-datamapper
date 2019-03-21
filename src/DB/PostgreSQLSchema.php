@@ -59,7 +59,7 @@ class PostgreSQLSchema
 
             if (isset($col['foreign']) && $col['foreign']) {
                 $sql .= ' references '.$col['foreign_table'].' ('.$col['foreign_id'].') '
-                        .self::prepareForeignOn($col).'; ';
+                        .self::prepareForeignOn($col).' ';
             }
 
             $delimiter = ', '."\n";
@@ -163,7 +163,7 @@ class PostgreSQLSchema
                     }
                     if (isset($col['foreign']) && $col['foreign']) {
                         $sql .= ' references '.$col['foreign_table'].' ('.$col['foreign_id'].') '
-                            .self::prepareForeignOn($col).'; ';
+                            .self::prepareForeignOn($col).' ';
                     }
                 } else {
                     $sql .= $delimiter.' ADD `'.$col['column'].'` ';
@@ -183,7 +183,7 @@ class PostgreSQLSchema
                     }
                     if (isset($col['foreign']) && $col['foreign']) {
                         $sql .= ' references '.$col['foreign_table'].' ('.$col['foreign_id'].') '
-                            .self::prepareForeignOn($col).'; ';
+                            .self::prepareForeignOn($col).' ';
                     }
                 }
 
