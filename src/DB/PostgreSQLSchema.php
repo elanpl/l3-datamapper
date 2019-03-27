@@ -141,11 +141,11 @@ class PostgreSQLSchema
         foreach ($columns as $col) {
             if (isset($col['column']) && $col['column'] !== null) {
                 if (isset($col['dropColumn']) && $col['dropColumn'] !== null) {
-                    $sql .= $delimiter.' DROP IF EXISTS `'.$col['column'].'` ';
+                    $sql .= $delimiter.' DROP IF EXISTS '.$col['column'].' ';
                 } elseif (isset($col['renameColumn']) && $col['renameColumn'] !== null) {
-                    $sql .= $delimiter.' RENAME `'.$col['column'].'` TO `'.$col['newName'].'` ';
+                    $sql .= $delimiter.' RENAME '.$col['column'].' TO '.$col['newName'].' ';
                 } elseif (isset($col['changeColumn']) && $col['changeColumn'] !== null) {
-                    $sql .= $delimiter.' ALTER `'.$col['column'].'` TYPE  ';
+                    $sql .= $delimiter.' ALTER '.$col['column'].' TYPE  ';
                     if (isset($col['autoincrement']) && $col['autoincrement']) {
                         $sql .= 'BIGSERIAL';
                     } else {
@@ -166,7 +166,7 @@ class PostgreSQLSchema
                             .self::prepareForeignOn($col).' ';
                     }
                 } else {
-                    $sql .= $delimiter.' ADD `'.$col['column'].'` ';
+                    $sql .= $delimiter.' ADD '.$col['column'].' ';
 
                     $sql .= self::getType($col['type']);
 
