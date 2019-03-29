@@ -4228,7 +4228,7 @@ class DataMapper implements IteratorAggregate
 
         if (empty($object)) {
             // no object was passed in, so create one
-            $class = DataMapper::$config['model_namespace'].$class;
+            $class = \strpos($class, DataMapper::$config['model_namespace']) === false ? DataMapper::$config['model_namespace'].$class : $class;
             $object = new $class();
         }
 
