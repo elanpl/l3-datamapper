@@ -145,25 +145,25 @@ class PostgreSQLSchema
                 } elseif (isset($col['renameColumn']) && $col['renameColumn'] !== null) {
                     $sql .= $delimiter.' RENAME '.$col['column'].' TO '.$col['newName'].' ';
                 } elseif (isset($col['changeColumn']) && $col['changeColumn'] !== null) {
-                    $sql .= $delimiter.' ALTER '.$col['column'].' TYPE  ';
-                    if (isset($col['autoincrement']) && $col['autoincrement']) {
-                        $sql .= 'BIGSERIAL';
-                    } else {
-                        $sql .= self::getType($col['type']);
-                    }
-                    if (isset($col['null']) && $col['null'] == false) {
-                        $sql .= ' NOT NULL ';
-                    }
-                    if (isset($col['default']) && $col['default'] !== null) {
-                        if ($col['default'] == 'current') {
-                            $sql .= ' DEFAULT CURRENT_TIMESTAMP ';
-                        } else {
-                            $sql .= ' DEFAULT '.$col['default'].' ';
+                    if (isset($col['null'])) {
+                        $sql .= $delimiter.' ALTER '.$col['column'].'  ';
+                        if (isset($col['null']) && $col['null'] == false) {
+                            $sql .= 'SET NOT NULL ';
+                        } elseif (isset($col['null']) && $col['null'] == true) {
+                            $sql .= 'DROP NOT NULL ';
                         }
-                    }
-                    if (isset($col['foreign']) && $col['foreign']) {
-                        $sql .= ' references '.$col['foreign_table'].' ('.$col['foreign_id'].') '
-                            .self::prepareForeignOn($col).' ';
+                    } else {
+                        $sql .= $delimiter.' ALTER '.$col['column'].' TYPE  ';
+                        if (isset($col['autoincrement']) && $col['autoincrement']) {
+                            $sql .= 'BIGSERIAL';
+                        } else {
+                            $sql .= self::getType($col['type']);
+                        }
+
+                        if (isset($col['foreign']) && $col['foreign']) {
+                            $sql .= ' references '.$col['foreign_table'].' ('.$col['foreign_id'].') '
+                                .self::prepareForeignOn($col).' ';
+                        }
                     }
                 } else {
                     $sql .= $delimiter.' ADD '.$col['column'].' ';
